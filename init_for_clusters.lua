@@ -65,7 +65,8 @@ opt.clipboard:append("unnamedplus")
 vim.g.mapleader = " "
 local map = vim.keymap.set
 
--- No save/quit maps (per your request)
+-- Exit insert mode quickly
+map("i", "jk", "<Esc>", { desc = "Exit insert mode" })
 
 -- Splits
 map("n", "<leader>ws", "<cmd>split<cr>",  { desc = "Split horizontally" })
@@ -166,3 +167,14 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.wo.spell = true
   end,
 })
+
+-- ===== Colorscheme (built-in) =====
+-- Choose one: "industry", "evening", "slate", "elflord", ...
+-- List installed schemes: :colorscheme <Space> then Ctrl-d
+opt.background = "dark"
+
+local scheme = "slate"  -- default: built-in dark-ish scheme (closest vibe to Atom One Dark among defaults)
+local ok, _ = pcall(vim.cmd.colorscheme, scheme)
+if not ok then
+  vim.cmd.colorscheme("default")
+end
