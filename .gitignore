@@ -1,0 +1,16 @@
+# macOS
+.DS_Store
+
+# Neovim
+.config/nvim/.DS_Store
+.config/nvim/lazy-lock.json
+
+# nnn: local state you probably don't want
+.config/nnn/.lastd
+.config/nnn/sessions/
+.config/nnn/mounts
+
+# General “don’t commit”
+**/sockets/
+**/*.log
+**/*.tmp
