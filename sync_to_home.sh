@@ -9,6 +9,7 @@ Apply selected configs from this dotfiles repo into ~/.config:
   - alacritty/
   - nnn/
   - nvim/
+  - tmux/
   - starship.toml (if present)
 
 Safety:
@@ -34,7 +35,7 @@ REPO_CONFIG_DIR="$REPO_DIR/.config"
 HOME_CONFIG_DIR="${HOME}/.config"
 
 # Guardrails: ensure expected repo paths exist
-for p in "$REPO_CONFIG_DIR/alacritty" "$REPO_CONFIG_DIR/nnn" "$REPO_CONFIG_DIR/nvim"; do
+for p in "$REPO_CONFIG_DIR/alacritty" "$REPO_CONFIG_DIR/nnn" "$REPO_CONFIG_DIR/nvim" "$REPO_CONFIG_DIR/tmux"; do
   if [[ ! -e "$p" ]]; then
     echo "ERROR: missing repo path: $p" >&2
     echo "Did you clone correctly and/or run sync_from_home.sh at least once?" >&2
@@ -56,7 +57,7 @@ else
   echo "📦 Creating backup at: $BACKUP_DIR"
 
   # Backup only the target paths if they exist
-  for name in alacritty nnn nvim; do
+  for name in alacritty nnn nvim tmux; do
     if [[ -e "$HOME_CONFIG_DIR/$name" ]]; then
       cp -a "$HOME_CONFIG_DIR/$name" "$BACKUP_DIR/"
     fi
@@ -82,6 +83,10 @@ rsync "${RSYNC_FLAGS[@]}" \
 
 rsync "${RSYNC_FLAGS[@]}" \
   "$REPO_CONFIG_DIR/nvim" \
+  "$HOME_CONFIG_DIR/"
+
+rsync "${RSYNC_FLAGS[@]}" \
+  "$REPO_CONFIG_DIR/tmux" \
   "$HOME_CONFIG_DIR/"
 
 if [[ -f "$REPO_CONFIG_DIR/starship.toml" ]]; then

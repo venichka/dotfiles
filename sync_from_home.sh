@@ -9,6 +9,7 @@ Sync selected configs from ~/.config into this dotfiles repo:
   - alacritty/
   - nnn/ (excluding sessions/)
   - nvim/ (excluding lazy-lock.json)
+  - tmux/
   - starship.toml (if present)
 
 Options:
@@ -32,7 +33,7 @@ HOME_CONFIG_DIR="${HOME}/.config"
 mkdir -p "$REPO_CONFIG_DIR"
 
 # Guardrails: ensure expected source paths exist
-for p in "$HOME_CONFIG_DIR/alacritty" "$HOME_CONFIG_DIR/nnn" "$HOME_CONFIG_DIR/nvim"; do
+for p in "$HOME_CONFIG_DIR/alacritty" "$HOME_CONFIG_DIR/nnn" "$HOME_CONFIG_DIR/nvim" "$HOME_CONFIG_DIR/tmux"; do
   if [[ ! -e "$p" ]]; then
     echo "ERROR: missing source path: $p" >&2
     exit 1
@@ -55,6 +56,10 @@ rsync "${RSYNC_FLAGS[@]}" --exclude 'sessions/' \
 
 rsync "${RSYNC_FLAGS[@]}" --exclude 'lazy-lock.json' \
   "$HOME_CONFIG_DIR/nvim" \
+  "$REPO_CONFIG_DIR/"
+
+rsync "${RSYNC_FLAGS[@]}" --exclude 'plugins/' \
+  "$HOME_CONFIG_DIR/tmux" \
   "$REPO_CONFIG_DIR/"
 
 if [[ -f "$HOME_CONFIG_DIR/starship.toml" ]]; then

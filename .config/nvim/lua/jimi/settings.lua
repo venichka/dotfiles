@@ -32,7 +32,9 @@ o.expandtab = true
 o.cindent = true
 -- o.autoindent = true
 o.wrap = true
-o.textwidth = 80
+o.textwidth = 92
+o.colorcolumn = "93"
+vim.cmd "highlight ColorColumn ctermbg=0 guibg=lightgrey"
 o.tabstop = 4
 o.shiftwidth = 0
 o.softtabstop = -1 -- If negative, shiftwidth value is used
@@ -40,8 +42,6 @@ o.list = true
 o.listchars = 'trail:·,nbsp:◇,tab:→ ,extends:▸,precedes:◂'
 -- o.listchars = 'eol:¬,space:·,lead: ,trail:·,nbsp:◇,tab:→-,extends:▸,precedes:◂,multispace:···⬝,leadmultispace:│   ,'
 -- o.formatoptions = 'qrn1'
-o.colorcolumn = "80"
-vim.cmd "highlight ColorColumn ctermbg=0 guibg=lightgrey"
 o.mouse = "a"  -- allow the mouse to be used in neovim
 o.cmdheight = 2  -- give more space for displaying messages
 
