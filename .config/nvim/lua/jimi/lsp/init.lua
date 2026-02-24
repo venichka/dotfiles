@@ -12,10 +12,10 @@ require("jimi.lsp.configs")
 local function _julia_project_root_for_buf(bufnr)
   bufnr = bufnr or 0
   local start = vim.api.nvim_buf_get_name(bufnr)
-  if start == "" then start = vim.loop.cwd() end
+  if start == "" then start = vim.uv.cwd() end
   local markers = { "Project.toml", "JuliaProject.toml", ".git" }
   local found = vim.fs.find(markers, { upward = true, path = start, stop = vim.uv.os_homedir() })
-  if #found == 0 then return vim.loop.cwd() end
+  if #found == 0 then return vim.uv.cwd() end
   local m = found[1]
   if m:match("Project%.toml$") or m:match("JuliaProject%.toml$") then
     return vim.fs.dirname(m)
@@ -41,12 +41,12 @@ vim.api.nvim_create_user_command("JuliaProjectRoot", function()
         for _, wf in ipairs(c.workspace_folders) do
           local uri = wf.uri or wf.name
           local path = uri and vim.uri_to_fname(uri) or "(unknown)"
-          table.insert(lines, "  • " .. path)
+          table.insert(lines, "  - " .. path)
         end
       else
         -- Fallbacks if workspace_folders isn’t populated
         local root = (c.root_dir or (c.config and c.config.root_dir)) or "(none)"
-        table.insert(lines, "  • (no workspace_folders; root_dir = " .. root .. ")")
+        table.insert(lines, "  - (no workspace_folders; root_dir = " .. root .. ")")
       end
     end
   end
@@ -54,6 +54,4 @@ vim.api.nvim_create_user_command("JuliaProjectRoot", function()
   -- Show a pretty, scrollable message window
   vim.notify(table.concat(lines, "\n"), vim.log.levels.INFO, { title = "Julia Project Root" })
 end, { desc = "Show detected Julia project root and julials workspace folders" })
--- =========================================================================== 
--- (Optional) If you lazy-load nvim-lspconfig, ensure it’s loaded before this file runs.
--- nvim-lspconfig itself is not deprecated; only require('lspconfig').setup() is. We’re using vim.lsp.config. :contentReference[oaicite:3]{index=3}
+-- ===========================================================================

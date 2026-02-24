@@ -54,7 +54,7 @@ M.setup = function()
       header = "",
       prefix = "",
     },
-  })  -- ← this is the supported way in 0.11+ for diagnostic signs. :contentReference[oaicite:3]{index=3}
+  })
 
   -- Border configs unchanged:
   vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(
@@ -69,24 +69,27 @@ end
 
 
 local function lsp_keymaps(bufnr)
-  local opts = { noremap = true, silent = true }
-  local keymap = vim.api.nvim_buf_set_keymap
-  keymap(bufnr, "n", "gD", "<cmd>lua vim.lsp.buf.declaration()<CR>", opts)
-  keymap(bufnr, "n", "gd", "<cmd>lua vim.lsp.buf.definition()<CR>", opts)
-  keymap(bufnr, "n", "K", "<cmd>lua vim.lsp.buf.hover()<CR>", opts)
-  keymap(bufnr, "n", "gI", "<cmd>lua vim.lsp.buf.implementation()<CR>", opts)
-  keymap(bufnr, "n", "gr", "<cmd>lua vim.lsp.buf.references()<CR>", opts)
-  keymap(bufnr, "n", "gl", "<cmd>lua vim.diagnostic.open_float()<CR>", opts)
-  -- prefer new API; use async format
-  keymap(bufnr, "n", "<leader>lf", "<cmd>lua vim.lsp.buf.format({ async = true })<cr>", opts)
-  keymap(bufnr, "n", "<leader>li", "<cmd>LspInfo<cr>", opts)
-  keymap(bufnr, "n", "<leader>lI", "<cmd>LspInstallInfo<cr>", opts)
-  keymap(bufnr, "n", "<leader>la", "<cmd>lua vim.lsp.buf.code_action()<cr>", opts)
-  keymap(bufnr, "n", "<leader>lj", "<cmd>lua vim.diagnostic.goto_next({buffer=0})<cr>", opts)
-  keymap(bufnr, "n", "<leader>lk", "<cmd>lua vim.diagnostic.goto_prev({buffer=0})<cr>", opts)
-  keymap(bufnr, "n", "<leader>lr", "<cmd>lua vim.lsp.buf.rename()<cr>", opts)
-  keymap(bufnr, "n", "<leader>ls", "<cmd>lua vim.lsp.buf.signature_help()<CR>", opts)
-  keymap(bufnr, "n", "<leader>lq", "<cmd>lua vim.diagnostic.setloclist()<CR>", opts)
+  local opts = { noremap = true, silent = true, buffer = bufnr }
+  local keymap = vim.keymap.set
+  local function nmap(lhs, rhs, desc)
+    keymap("n", lhs, rhs, vim.tbl_extend("force", opts, { desc = desc }))
+  end
+
+  nmap("gD", vim.lsp.buf.declaration, "LSP declaration")
+  nmap("gd", vim.lsp.buf.definition, "LSP definition")
+  nmap("K", vim.lsp.buf.hover, "LSP hover")
+  nmap("gI", vim.lsp.buf.implementation, "LSP implementation")
+  nmap("gr", vim.lsp.buf.references, "LSP references")
+  nmap("gl", vim.diagnostic.open_float, "Line diagnostics")
+  nmap("<leader>lf", function() vim.lsp.buf.format({ async = true }) end, "Format buffer")
+  nmap("<leader>li", "<cmd>LspInfo<cr>", "LSP info")
+  nmap("<leader>lI", "<cmd>Mason<cr>", "Mason")
+  nmap("<leader>la", vim.lsp.buf.code_action, "Code actions")
+  nmap("<leader>lj", vim.diagnostic.goto_next, "Next diagnostic")
+  nmap("<leader>lk", vim.diagnostic.goto_prev, "Previous diagnostic")
+  nmap("<leader>lr", vim.lsp.buf.rename, "Rename symbol")
+  nmap("<leader>ls", vim.lsp.buf.signature_help, "Signature help")
+  nmap("<leader>lq", vim.diagnostic.setloclist, "Diagnostics to loclist")
 end
 
 M.on_attach = function(client, bufnr)

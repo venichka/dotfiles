@@ -1,99 +1,68 @@
-local function map(m, k, v)
-    vim.keymap.set(m, k, v, { silent = true })
+local function map(modes, lhs, rhs, desc, extra)
+  local opts = vim.tbl_extend("force", { silent = true, desc = desc }, extra or {})
+  vim.keymap.set(modes, lhs, rhs, opts)
 end
 
--- Modes
---   normal_mode = "n",
---   insert_mode = "i",
---   visual_mode = "v",
---   visual_block_mode = "x",
---   term_mode = "t",
---   command_mode = "c",
+-- Disable bare space key
+map("", "<Space>", "<Nop>", "Disable Space")
 
--- Map <leader> to space
-map("", "<Space>", "<Nop>")
-vim.g.mapleader = " "
-vim.g.maplocalleader = " "
+-- Normal mode: window navigation
+map("n", "<leader>wh", "<C-w>h", "Focus left window")
+map("n", "<leader>wj", "<C-w>j", "Focus lower window")
+map("n", "<leader>wk", "<C-w>k", "Focus upper window")
+map("n", "<leader>wl", "<C-w>l", "Focus right window")
 
--- Normal --
--- Better window navigation
-map("n", "<leader>wh", "<C-w>h")
-map("n", "<leader>wj", "<C-w>j")
-map("n", "<leader>wk", "<C-w>k")
-map("n", "<leader>wl", "<C-w>l")
+-- Normal mode: split window
+map("n", "<leader>wv", ":vsplit<CR>", "Vertical split")
+map("n", "<leader>ws", ":split<CR>", "Horizontal split")
 
--- map("n", "<leader>e", ":Lex 30<CR>")
+-- Normal mode: resize splits
+map("n", "<A-Up>", ":resize +2<CR>", "Increase split height")
+map("n", "<A-Down>", ":resize -2<CR>", "Decrease split height")
+map("n", "<A-Left>", ":vertical resize -2<CR>", "Decrease split width")
+map("n", "<A-Right>", ":vertical resize +2<CR>", "Increase split width")
 
--- Split window
-map("n", "<leader>wv", ":vsplit<CR>")
-map("n", "<leader>ws", ":split<CR>")
+-- Normal mode: config reload
+map("n", "<leader>hh", ":source $MYVIMRC<CR>", "Reload config")
 
--- Resize with arrows
-map("n", "<A-Up>", ":resize +2<CR>")
-map("n", "<A-Down>", ":resize -2<CR>")
-map("n", "<A-Left>", ":vertical resize -2<CR>")
-map("n", "<A-Right>", ":vertical resize +2<CR>")
+-- Normal mode: search behavior tweaks
+map("n", "*", "*N", "Search word without moving to next")
+map("n", "n", "nzz", "Next search result centered")
+map("n", "N", "Nzz", "Previous search result centered")
 
--- Reload nvim config
-map("n", "<leader>hh", ":source $MYVIMRC<CR>")
+-- Normal mode: quit
+map("n", "<C-Q>", "<CMD>q<CR>", "Quit window")
 
--- Fix * (Keep the cursor position, don't move to next match)
-map('n', '*', '*N')
+-- Normal mode: insert blank lines
+map("n", "<leader>o", "o<ESC>", "New line below")
+map("n", "<leader>O", "O<ESC>", "New line above")
 
--- Fix n and N. Keeping cursor in center
-map('n', 'n', 'nzz')
-map('n', 'N', 'Nzz')
+-- Normal mode: buffer navigation
+map("n", "<leader>[", "<CMD>bp<CR>", "Previous buffer")
+map("n", "<leader>]", "<CMD>bn<CR>", "Next buffer")
+map("n", "''", "<CMD>b#<CR>", "Last buffer")
 
--- Quickly save the current buffer or all buffers
---[[ map('n', '<leader>w', '<CMD>update<CR>') ]]
---[[ map('n', '<leader>W', '<CMD>wall<CR>') ]]
+-- Normal mode: split shortcut
+map("n", "<A-\\>", "<CMD>split<CR>", "Horizontal split (alt)")
 
--- Quit neovim
-map('n', '<C-Q>', '<CMD>q<CR>')
+-- Normal and visual mode: move lines
+map("n", "<C-j>", "<CMD>move .+1<CR>", "Move line down")
+map("n", "<C-k>", "<CMD>move .-2<CR>", "Move line up")
+map("x", "<C-j>", ":move '>+1<CR>gv=gv", "Move selection down")
+map("x", "<C-k>", ":move '<-2<CR>gv=gv", "Move selection up")
 
--- leader-o/O inserts blank line below/above
-map('n', '<leader>o', 'o<ESC>')
-map('n', '<leader>O', 'O<ESC>')
+-- Operator-pending and visual: whole-buffer text object
+map("o", "A", ":<C-U>normal! mzggVG<CR>`z", "Select all (operator-pending)")
+map("x", "A", ":<C-U>normal! ggVG<CR>", "Select all")
 
--- Move to the next/previous buffer
-map('n', '<leader>[', '<CMD>bp<CR>')
-map('n', '<leader>]', '<CMD>bn<CR>')
+-- Insert mode: shell-style cursor movement
+map("i", "<C-E>", "<ESC>A", "Move to line end")
+map("i", "<C-A>", "<ESC>I", "Move to line start")
+map("i", "jk", "<ESC>", "Exit insert mode")
 
--- Move to last buffer
-map('n', "''", '<CMD>b#<CR>')
-
--- Copying the vscode behaviour of making tab splits
---[[ map('n', '<C-\\>', '<CMD>vsplit<CR>') ]]
-map('n', '<A-\\>', '<CMD>split<CR>')
-
--- Move line up and down in NORMAL and VISUAL modes
--- Reference: https://vim.fandom.com/wiki/Moving_lines_up_or_down
-map('n', '<C-j>', '<CMD>move .+1<CR>')
-map('n', '<C-k>', '<CMD>move .-2<CR>')
-map('x', '<C-j>', ":move '>+1<CR>gv=gv")
-map('x', '<C-k>', ":move '<-2<CR>gv=gv")
-
--- Use operator pending mode to visually select the whole buffer
--- e.g. dA = delete buffer ALL, yA = copy whole buffer ALL
-map('o', 'A', ':<C-U>normal! mzggVG<CR>`z')
-map('x', 'A', ':<C-U>normal! ggVG<CR>')
-
--- Insert --
--- Mimic shell movements
-map('i', '<C-E>', '<ESC>A')
-map('i', '<C-A>', '<ESC>I')
-
--- Press jk fast to exit insert mode 
-map("i", "jk", "<ESC>")
-
--- Visual --
--- Stay in indent mode
-map("v", "<", "<gv")
-map("v", ">", ">gv")
-
--- Move text up and down
-map("v", "<A-j>", ":m .+1<CR>==")
-map("v", "<A-k>", ":m .-2<CR>==")
-map("v", "p", '"_dP')  -- not to copy substituted text after paste
-
-
+-- Visual mode: indentation and paste behavior
+map("v", "<", "<gv", "Indent left and reselect")
+map("v", ">", ">gv", "Indent right and reselect")
+map("v", "<A-j>", ":m .+1<CR>==", "Move selection down")
+map("v", "<A-k>", ":m .-2<CR>==", "Move selection up")
+map("v", "p", '"_dP', "Paste without overwriting default register")

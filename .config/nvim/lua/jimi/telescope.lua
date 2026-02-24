@@ -3,22 +3,6 @@ if not status_ok then
   return
 end
 
-local function map(m, k, v)
-    vim.keymap.set(m, k, v, { silent = true })
-end
-local builtin = require("telescope.builtin")
-local utils   = require("telescope.utils")
-
-map("n", "<leader>fp", "<cmd>Telescope find_files<cr>")
-map("n", "<leader>ff", "<cmd>lua require'telescope.builtin'.find_files(require('telescope.themes').get_dropdown({ previewer = false }))<cr>")
-map("n", "<leader>fg", "<cmd>Telescope live_grep<cr>")
-map("n", "<leader>fb", "<cmd>Telescope buffers<cr>")
-map("n", "<leader>fu", function()
-  builtin.find_files({
-    cwd = utils.buffer_dir() .. "/..",  -- parent of current buffer's dir
-  })
-end)
-
 local actions = require "telescope.actions"
 
 telescope.setup {
@@ -116,3 +100,7 @@ telescope.setup {
         },
   },
 }
+
+pcall(function()
+  telescope.load_extension("fzf")
+end)

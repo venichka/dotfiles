@@ -1,6 +1,6 @@
 local status_ok, toggleterm = pcall(require, "toggleterm")
 if not status_ok then
-	return
+		return
 end
 
 toggleterm.setup({
@@ -20,13 +20,19 @@ toggleterm.setup({
 	},
 })
 
-function _G.set_terminal_keymaps()
-  local opts = {noremap = true}
-  -- vim.api.nvim_buf_set_keymap(0, 't', '<esc>', [[<C-\><C-n>]], opts)
-  vim.api.nvim_buf_set_keymap(0, 't', '<leader>wh', [[<C-\><C-n><C-W>h]], opts)
-  vim.api.nvim_buf_set_keymap(0, 't', '<leader>wj', [[<C-\><C-n><C-W>j]], opts)
-  vim.api.nvim_buf_set_keymap(0, 't', '<leader>wk', [[<C-\><C-n><C-W>k]], opts)
-  vim.api.nvim_buf_set_keymap(0, 't', '<leader>wl', [[<C-\><C-n><C-W>l]], opts)
+local function set_terminal_keymaps(bufnr)
+  local opts = { buffer = bufnr, noremap = true, silent = true }
+  vim.keymap.set("t", "<leader>wh", [[<C-\><C-n><C-W>h]], vim.tbl_extend("force", opts, { desc = "Terminal: focus left window" }))
+  vim.keymap.set("t", "<leader>wj", [[<C-\><C-n><C-W>j]], vim.tbl_extend("force", opts, { desc = "Terminal: focus lower window" }))
+  vim.keymap.set("t", "<leader>wk", [[<C-\><C-n><C-W>k]], vim.tbl_extend("force", opts, { desc = "Terminal: focus upper window" }))
+  vim.keymap.set("t", "<leader>wl", [[<C-\><C-n><C-W>l]], vim.tbl_extend("force", opts, { desc = "Terminal: focus right window" }))
 end
 
-vim.cmd('autocmd! TermOpen term://* lua set_terminal_keymaps()')
+local term_group = vim.api.nvim_create_augroup("JimiToggleTerm", { clear = true })
+vim.api.nvim_create_autocmd("TermOpen", {
+  group = term_group,
+  pattern = "term://*",
+  callback = function(args)
+    set_terminal_keymaps(args.buf)
+  end,
+})

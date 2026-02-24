@@ -93,5 +93,5 @@ iron.setup {
 }
 
 -- iron also has a list of commands, see :h iron-commands for all available commands
-vim.keymap.set('n', '<space>rf', '<cmd>IronFocus<cr>')
-vim.keymap.set('n', '<space>rh', '<cmd>IronHide<cr>')
+vim.keymap.set('n', '<space>rf', '<cmd>IronFocus<cr>', { desc = "REPL focus" })
+vim.keymap.set('n', '<space>rh', '<cmd>IronHide<cr>', { desc = "REPL hide" })

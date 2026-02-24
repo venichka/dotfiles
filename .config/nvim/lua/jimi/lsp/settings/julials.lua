@@ -1,73 +1,63 @@
 local julia = vim.fn.exepath("julia") or "julia"
-local handlers = require("jimi.lsp.handlers")         -- ADD
+local handlers = require("jimi.lsp.handlers")
 
--- Compute the workspace/env dir once (prefer Project.toml, else git root, else cwd)
-local function julia_root()
+local function julia_root(startpath)
   local markers = { "Project.toml", "JuliaProject.toml", ".git" }
-  local found = vim.fs.find(markers, { upward = true, stop = vim.uv.os_homedir(), path = vim.api.nvim_buf_get_name(0) })
+  local search_from = startpath
+  if not search_from or search_from == "" then
+    search_from = vim.uv.cwd()
+  end
+
+  local found = vim.fs.find(markers, {
+    upward = true,
+    stop = vim.uv.os_homedir(),
+    path = search_from,
+  })
+
   if #found > 0 then
-    local m = found[1]
-    -- If we matched a file (Project.toml), take its dir; if ".git" dir, take its parent
-    if m:match("Project%.toml$") or m:match("JuliaProject%.toml$") then
-      return vim.fs.dirname(m)
-    elseif m:match("%.git$") then
-      return vim.fs.dirname(m)  -- project root
+    local marker = found[1]
+    if marker:match("Project%.toml$") or marker:match("JuliaProject%.toml$") then
+      return vim.fs.dirname(marker)
+    end
+    if marker:match("%.git$") then
+      return vim.fs.dirname(marker)
     end
   end
-  return vim.loop.cwd()
+
+  return vim.uv.cwd()
 end
 
-local root = julia_root()
-
-
-return {
-  on_attach = handlers.on_attach,                      -- ADD
-  capabilities = handlers.capabilities,                -- ADD
-  -- root_dir = function(fname)
-  --   -- use your smarter logic:
-  --   return julia_root()
-  --   -- (or use util.root_pattern(...) if you prefer)
-  --   -- return util.root_pattern("Project.toml", "JuliaProject.toml", "Manifest.toml", ".git")(fname)
-  -- end,
-  settings = {
-    julia = {
-        NumThreads = 6,
-        enableTelemetry = false,
-    },
-  },
-  cmd = {
-    julia, "--startup-file=no", "--history-file=no",
+local function julials_cmd(root_dir)
+  local project_root = julia_root(root_dir)
+  return {
+    julia,
+    "--startup-file=no",
+    "--history-file=no",
     "--project=@nvim-lspconfig",
-    "-e", [[
+    "-e",
+    [[
       using Pkg
       Pkg.instantiate()
       using LanguageServer
-      # Pass env path positionally (ARGS[1]); no keywords needed
       LanguageServer.runserver(stdin, stdout, isempty(ARGS) ? "" : ARGS[1])
     ]],
-    root,  -- <-- ARGS[1] for the -e script above
+    project_root,
+  }
+end
+
+return {
+  on_attach = handlers.on_attach,
+  capabilities = handlers.capabilities,
+  settings = {
+    julia = {
+      NumThreads = 6,
+      enableTelemetry = false,
+    },
   },
+  cmd = julials_cmd(vim.uv.cwd()),
+  on_new_config = function(new_config, new_root_dir)
+    new_config.cmd = julials_cmd(new_root_dir)
+  end,
   filetypes = { "julia" },
   root_markers = { "Project.toml", "Manifest.toml", ".git" },
 }
-
-
--- local opts = {
---     settings = {
---         julia = {
---             NumThreads = 6,
---             enableTelemetry = false,
---         },
---     },
---     setup = {
---         on_new_config = function(new_config, _)
---             local julia_bin = vim.fn.exepath("julia") or "/opt/homebrew/bin/julia"
---             if require'lspconfig'.util.path.is_file(julia_bin) then
---                 new_config.cmd[1] = julia_bin
---             end
---         end
---     },
--- }
---
--- return opts
-

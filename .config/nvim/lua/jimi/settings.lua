@@ -1,5 +1,4 @@
 -- :help options
-local g = vim.g
 local o = vim.o
 
 -- cmd('syntax on')
@@ -52,7 +51,7 @@ vim.g.skip_ts_context_commentstring_module = true
 o.clipboard = 'unnamedplus'
 
 -- Case insensitive searching UNLESS /C or capital in search
-o.ignorecase = false
+o.ignorecase = true
 o.smartcase = true
 
 -- Undo and backup options
