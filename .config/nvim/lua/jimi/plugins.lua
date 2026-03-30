@@ -221,6 +221,7 @@ local plugins = {
         { "<leader>mc", desc = "Mark motion/selection" },
         { "<leader>md", desc = "Remove mark" },
         { "<leader>hh", desc = "Reload config" },
+        { "<leader>ht", desc = "Toggle treesitter highlight" },
         { "<leader>o", desc = "New line below" },
         { "<leader>O", desc = "New line above" },
         { "<leader>wh", desc = "Focus left window" },
@@ -235,31 +236,58 @@ local plugins = {
 
   {
     "nvim-treesitter/nvim-treesitter",
+    branch = "main",
     event = { "BufReadPost", "BufNewFile" },
     build = ":TSUpdate",
-    main = "nvim-treesitter.configs",
-    dependencies = {
-      "nvim-treesitter/nvim-treesitter-refactor",
-      "JoosepAlviste/nvim-ts-context-commentstring",
-    },
-    opts = function()
-      require("nvim-treesitter.install").prefer_git = true
-      return {
-        ensure_installed = { "julia" },
-        ignore_install = { "ipkg" },
-        auto_install = false,
-        highlight = { enable = true },
-        indent = { enable = true },
-        refactor = {
-          highlight_definitions = { enable = true },
-          smart_rename = { enable = true },
-          navigation = { enable = true },
-        },
-        context_commentstring = { enable = true, enable_autocmd = false },
-      }
+    config = function()
+      local ts = require("nvim-treesitter")
+
+      -- Start treesitter for a buffer, installing the parser first if needed
+      _G.ts_ensure_and_start = function(buf)
+        buf = buf or vim.api.nvim_get_current_buf()
+        local ft = vim.bo[buf].filetype
+        local lang = vim.treesitter.language.get_lang(ft) or ft
+        local ok = pcall(vim.treesitter.language.inspect, lang)
+        if ok then
+          vim.treesitter.start(buf)
+        else
+          vim.notify("Installing treesitter parser for " .. lang .. "...", vim.log.levels.INFO)
+          ts.install({ lang })
+          -- Retry starting after a short delay to allow async install to finish
+          local timer = vim.uv.new_timer()
+          local attempts = 0
+          timer:start(1000, 2000, vim.schedule_wrap(function()
+            attempts = attempts + 1
+            if pcall(vim.treesitter.language.inspect, lang) then
+              vim.treesitter.start(buf)
+              vim.notify("Treesitter parser for " .. lang .. " installed", vim.log.levels.INFO)
+              timer:stop()
+              timer:close()
+            elseif attempts >= 15 then
+              vim.notify("Treesitter parser install for " .. lang .. " timed out", vim.log.levels.WARN)
+              timer:stop()
+              timer:close()
+            end
+          end))
+        end
+      end
+
+      -- Auto-start treesitter for non-bundled languages
+      -- (bundled languages like lua, vim, markdown start automatically)
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = { "julia", "python", "c", "cpp", "fortran" },
+        callback = function(args)
+          ts_ensure_and_start(args.buf)
+        end,
+      })
     end,
   },
 
+  {
+    "JoosepAlviste/nvim-ts-context-commentstring",
+    lazy = true,
+    opts = { enable_autocmd = false },
+  },
   {
     "numToStr/Comment.nvim",
     event = "VeryLazy",

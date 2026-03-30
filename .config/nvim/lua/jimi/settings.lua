@@ -31,6 +31,7 @@ o.expandtab = true
 o.cindent = true
 -- o.autoindent = true
 o.wrap = true
+o.linebreak = true
 o.textwidth = 92
 o.colorcolumn = "93"
 vim.cmd "highlight ColorColumn ctermbg=0 guibg=lightgrey"

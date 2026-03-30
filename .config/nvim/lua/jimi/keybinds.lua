@@ -25,6 +25,16 @@ map("n", "<A-Right>", ":vertical resize +2<CR>", "Increase split width")
 -- Normal mode: config reload
 map("n", "<leader>hh", ":source $MYVIMRC<CR>", "Reload config")
 
+-- Normal mode: toggle treesitter highlight
+map("n", "<leader>ht", function()
+  local buf = vim.api.nvim_get_current_buf()
+  if vim.treesitter.highlighter.active[buf] then
+    vim.treesitter.stop(buf)
+  else
+    ts_ensure_and_start(buf)
+  end
+end, "Toggle treesitter highlight")
+
 -- Normal mode: search behavior tweaks
 map("n", "*", "*N", "Search word without moving to next")
 map("n", "n", "nzz", "Next search result centered")

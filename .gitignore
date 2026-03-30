@@ -4,6 +4,7 @@
 # Neovim
 .config/nvim/.DS_Store
 .config/nvim/lazy-lock.json
+.config/nvim/CLAUDE.md
 
 # nnn: local state you probably don't want
 .config/nnn/.lastd

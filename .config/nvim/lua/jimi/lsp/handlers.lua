@@ -56,13 +56,6 @@ M.setup = function()
     },
   })
 
-  -- Border configs unchanged:
-  vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(
-    vim.lsp.handlers.hover, { border = "rounded" }
-  )
-  vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(
-    vim.lsp.handlers.signature_help, { border = "rounded" }
-  )
 end
 
 
@@ -77,7 +70,7 @@ local function lsp_keymaps(bufnr)
 
   nmap("gD", vim.lsp.buf.declaration, "LSP declaration")
   nmap("gd", vim.lsp.buf.definition, "LSP definition")
-  nmap("K", vim.lsp.buf.hover, "LSP hover")
+  nmap("K", function() vim.lsp.buf.hover({ border = "rounded" }) end, "LSP hover")
   nmap("gI", vim.lsp.buf.implementation, "LSP implementation")
   nmap("gr", vim.lsp.buf.references, "LSP references")
   nmap("gl", vim.diagnostic.open_float, "Line diagnostics")
@@ -88,7 +81,7 @@ local function lsp_keymaps(bufnr)
   nmap("<leader>lj", vim.diagnostic.goto_next, "Next diagnostic")
   nmap("<leader>lk", vim.diagnostic.goto_prev, "Previous diagnostic")
   nmap("<leader>lr", vim.lsp.buf.rename, "Rename symbol")
-  nmap("<leader>ls", vim.lsp.buf.signature_help, "Signature help")
+  nmap("<leader>ls", function() vim.lsp.buf.signature_help({ border = "rounded" }) end, "Signature help")
   nmap("<leader>lq", vim.diagnostic.setloclist, "Diagnostics to loclist")
 end
 
@@ -103,11 +96,21 @@ M.on_attach = function(client, bufnr)
   end
 
   lsp_keymaps(bufnr)
-   local status_ok, illuminate = pcall(require, "illuminate")
-   if not status_ok then
-     return
-   end
-   illuminate.on_attach(client)
- end
+
+  -- Highlight references of symbol under cursor (replaces nvim-treesitter-refactor)
+  if client.server_capabilities.documentHighlightProvider then
+    local hl_group = vim.api.nvim_create_augroup("LspDocumentHighlight_" .. bufnr, { clear = true })
+    vim.api.nvim_create_autocmd("CursorHold", {
+      group = hl_group,
+      buffer = bufnr,
+      callback = vim.lsp.buf.document_highlight,
+    })
+    vim.api.nvim_create_autocmd({ "CursorMoved", "InsertEnter" }, {
+      group = hl_group,
+      buffer = bufnr,
+      callback = vim.lsp.buf.clear_references,
+    })
+  end
+end
 
 return M
