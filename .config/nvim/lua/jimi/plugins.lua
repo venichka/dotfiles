@@ -294,8 +294,25 @@ local plugins = {
     dependencies = { "JoosepAlviste/nvim-ts-context-commentstring" },
     opts = function()
       local ok, integr = pcall(require, "ts_context_commentstring.integrations.comment_nvim")
+      local ts_hook = ok and integr.create_pre_hook and integr.create_pre_hook() or nil
       return {
-        pre_hook = ok and integr.create_pre_hook and integr.create_pre_hook() or nil,
+        -- pre_hook must always return a valid commentstring to avoid Comment.nvim's
+        -- buggy treesitter fallback (crashes on nil parser in newer Neovim).
+        -- If a parser exists, use ts_context_commentstring; otherwise fall back to
+        -- the buffer's vim commentstring (e.g. "% %s" for tex).
+        pre_hook = function(ctx)
+          local lang = vim.treesitter.language.get_lang(vim.bo.filetype) or vim.bo.filetype
+          local has_parser = pcall(vim.treesitter.language.inspect, lang)
+          if has_parser and ts_hook then
+            local ok2, result = pcall(ts_hook, ctx)
+            if ok2 and type(result) == "string" and result ~= "" then
+              return result
+            end
+          end
+          local cs = vim.bo.commentstring
+          if cs and cs ~= "" then return cs end
+          return nil
+        end,
       }
     end,
   },
