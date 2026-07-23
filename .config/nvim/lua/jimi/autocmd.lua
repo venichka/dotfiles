@@ -8,6 +8,8 @@ vim.filetype.add({
         conf = 'conf',
         mdx = 'markdown',
         mjml = 'html',
+        sage = 'sage',      -- SageMath scripts (highlighted as python, see below)
+        cdb = 'cadabra',    -- Cadabra scripts (for the iron REPL)
     },
     pattern = {
         ['.*%.env.*'] = 'sh',
@@ -25,5 +27,17 @@ A.nvim_create_autocmd('TextYankPost', {
     group = num_au,
     callback = function()
         vim.highlight.on_yank({ higroup = 'Visual' })
+    end,
+})
+
+-- Sage: highlight via the Python treesitter grammar, but keep a distinct 'sage'
+-- filetype so the python LSP (pylsp) does NOT attach — highlighting, no linting.
+vim.treesitter.language.register('python', 'sage')
+A.nvim_create_autocmd('FileType', {
+    group = num_au,
+    pattern = 'sage',
+    callback = function(ev)
+        pcall(vim.treesitter.start, ev.buf, 'python')
+        vim.bo[ev.buf].commentstring = '# %s'
     end,
 })

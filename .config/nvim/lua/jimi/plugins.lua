@@ -391,7 +391,9 @@ local plugins = {
     keys = {
       { "<space>rr", "<cmd>IronRepl<cr>", mode = "n", desc = "Iron toggle REPL" },
       { "<space>rf", "<cmd>IronFocus<cr>", mode = "n", desc = "Iron focus REPL" },
-      { "<space>rh", "<cmd>IronHide<cr>", mode = "n", desc = "Iron hide REPL" },
+      { "<space>rH", "<cmd>IronHide<cr>", mode = "n", desc = "Iron hide REPL" },
+      { "<space>rh", mode = "n", desc = "Iron REPL: horizontal split" },
+      { "<space>rv", mode = "n", desc = "Iron REPL: vertical 40% split" },
     },
     config = function()
       require("jimi.iron")
