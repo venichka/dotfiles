@@ -8,7 +8,7 @@ Usage: sync_to_home.sh [--dry-run] [component ...]
 Apply selected configs from this dotfiles repo into ~/.config.
 
 Components (default: all):
-  alacritty  nnn  nvim  tmux  starship
+  alacritty  nnn  nvim  rio  tmux  starship
 
 Examples:
   sync_to_home.sh                 # apply everything
@@ -19,6 +19,8 @@ Safety:
   - Creates a timestamped backup of existing target paths before overwriting:
       ~/.config.backup-YYYYMMDD-HHMMSS/
   - Only the components being synced are backed up.
+  - Machine-local files are never overwritten or deleted:
+      alacritty/local.toml  nnn/{sessions/,.lastd,mounts}  nvim/lazy-lock.json  tmux/plugins/
 
 Options:
   --dry-run   Show what would change without copying/deleting (no backup made)
@@ -28,7 +30,7 @@ EOF
 
 DRYRUN=0
 SELECTED=()
-VALID=(alacritty nnn nvim tmux starship)
+VALID=(alacritty nnn nvim rio tmux starship)
 
 is_valid() {
   local n
@@ -65,7 +67,7 @@ REPO_CONFIG_DIR="$REPO_DIR/.config"
 HOME_CONFIG_DIR="${HOME}/.config"
 
 # Guardrails: ensure expected repo paths exist (only for selected dir components)
-for name in alacritty nnn nvim tmux; do
+for name in alacritty nnn nvim rio tmux; do
   want "$name" || continue
   p="$REPO_CONFIG_DIR/$name"
   if [[ ! -e "$p" ]]; then
@@ -89,7 +91,7 @@ else
   echo "📦 Creating backup at: $BACKUP_DIR"
 
   # Backup only the selected target paths that exist
-  for name in alacritty nnn nvim tmux; do
+  for name in alacritty nnn nvim rio tmux; do
     want "$name" || continue
     if [[ -e "$HOME_CONFIG_DIR/$name" ]]; then
       cp -a "$HOME_CONFIG_DIR/$name" "$BACKUP_DIR/"
@@ -107,19 +109,25 @@ if [[ "$DRYRUN" -eq 1 ]]; then
 fi
 
 if want alacritty; then
-  rsync "${RSYNC_FLAGS[@]}" \
+  rsync "${RSYNC_FLAGS[@]}" --exclude 'local.toml' \
     "$REPO_CONFIG_DIR/alacritty" \
     "$HOME_CONFIG_DIR/"
 fi
 
-if want nnn; then
+if want rio; then
   rsync "${RSYNC_FLAGS[@]}" \
+    "$REPO_CONFIG_DIR/rio" \
+    "$HOME_CONFIG_DIR/"
+fi
+
+if want nnn; then
+  rsync "${RSYNC_FLAGS[@]}" --exclude 'sessions/' --exclude '.lastd' --exclude 'mounts' \
     "$REPO_CONFIG_DIR/nnn" \
     "$HOME_CONFIG_DIR/"
 fi
 
 if want nvim; then
-  rsync "${RSYNC_FLAGS[@]}" \
+  rsync "${RSYNC_FLAGS[@]}" --exclude 'lazy-lock.json' \
     "$REPO_CONFIG_DIR/nvim" \
     "$HOME_CONFIG_DIR/"
 fi

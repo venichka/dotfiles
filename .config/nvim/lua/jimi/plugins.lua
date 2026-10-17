@@ -32,7 +32,15 @@ local plugins = {
     ft = { "tex", "plaintex", "bib" },
     init = function()
       vim.g.tex_flavor = "latex"
-      vim.g.vimtex_view_method = "skim"
+      -- PDF viewer: Skim on macOS, Zathura on Linux. The full zathura variant needs
+      -- xdotool, which only works on X11, so Wayland (KDE's default) uses zathura_simple.
+      if vim.fn.has("mac") == 1 then
+        vim.g.vimtex_view_method = "skim"
+      elseif vim.env.WAYLAND_DISPLAY or vim.fn.executable("xdotool") == 0 then
+        vim.g.vimtex_view_method = "zathura_simple"
+      else
+        vim.g.vimtex_view_method = "zathura"
+      end
       vim.g.vimtex_quickfix_mode = 0
       vim.g.vimtex_compiler_method = "latexmk"
       vim.o.conceallevel = 1
@@ -44,20 +52,22 @@ local plugins = {
     "vimwiki/vimwiki",
     cmd = { "VimwikiIndex", "VimwikiDiaryIndex", "VimwikiTabIndex" },
     init = function()
+      -- Google Drive folder: "~/Google Drive" on macOS, "~/Google_drive" on Linux
+      local gdrive = vim.fn.has("mac") == 1 and "~/Google Drive" or "~/Google_drive"
       vim.g.vimwiki_global_ext = 0
       vim.g.vimwiki_list = {
         {
           auto_export = 1,
           auto_header = 1,
           automatic_nested_syntaxes = 1,
-          path = "~/Google Drive/Work/Notes/vimwiki",
-          path_html = "~/Google Drive/Work/Notes/vimwiki_html",
+          path = gdrive .. "/Work/Notes/vimwiki",
+          path_html = gdrive .. "/Work/Notes/vimwiki_html",
           template_path = "~/.dotfiles/vimwiki_conf/templates_html",
           template_default = "GitHub",
           template_ext = ".html5",
           syntax = "markdown",
           ext = ".md",
-          custom_wiki2html = "~/Google Drive/Work/Notes/vimwiki/wiki2html_zsh.sh",
+          custom_wiki2html = gdrive .. "/Work/Notes/vimwiki/wiki2html_zsh.sh",
           autotags = 1,
           list_margin = 0,
           links_space_char = "_",

@@ -44,14 +44,15 @@ iron.setup {
       sage = {
         -- Sage's REPL is IPython + the preparser, so cells run exactly like a
         -- .sage file. Startup is slow (~15s) but you keep the REPL open.
-        command = { "/Users/nikita/.python_envs/sage/bin/sage" },
+        -- `sage` on PATH if installed system-wide, else the venv in your home
+        command = { vim.fn.exepath("sage") ~= "" and "sage" or vim.fn.expand("~/.python_envs/sage/bin/sage") },
         format = common.bracketed_paste,   -- IPython-based → generic bracketed paste
         block_dividers = { "# %%", "#%%" },
       },
       cadabra = {
         -- EXPERIMENTAL: cadabra2-cli interactive REPL (Cadabra notation in a
         -- python context). May need format/flag tuning — test send behaviour.
-        command = { "/opt/homebrew/bin/cadabra2-cli", "-q" },
+        command = { "cadabra2-cli", "-q" },  -- from PATH: Homebrew on macOS, /usr/bin on Linux
         block_dividers = { "# %%", "#%%" },
       },
     },

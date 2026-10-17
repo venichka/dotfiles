@@ -8,10 +8,10 @@ Usage: sync_from_home.sh [--dry-run] [component ...]
 Sync selected configs from ~/.config into this dotfiles repo.
 
 Components (default: all):
-  alacritty  nnn  nvim  tmux  starship
+  alacritty  nnn  nvim  rio  tmux  starship
 
-Excludes applied automatically:
-  nnn/sessions/   nvim/lazy-lock.json   tmux/plugins/
+Excludes applied automatically (machine-local files):
+  alacritty/local.toml   nnn/sessions/   nvim/lazy-lock.json   tmux/plugins/
 
 Examples:
   sync_from_home.sh                 # sync everything
@@ -26,7 +26,7 @@ EOF
 
 DRYRUN=0
 SELECTED=()
-VALID=(alacritty nnn nvim tmux starship)
+VALID=(alacritty nnn nvim rio tmux starship)
 
 is_valid() {
   local n
@@ -65,7 +65,7 @@ HOME_CONFIG_DIR="${HOME}/.config"
 mkdir -p "$REPO_CONFIG_DIR"
 
 # Guardrails: ensure expected source paths exist (only for selected dir components)
-for name in alacritty nnn nvim tmux; do
+for name in alacritty nnn nvim rio tmux; do
   want "$name" || continue
   p="$HOME_CONFIG_DIR/$name"
   if [[ ! -e "$p" ]]; then
@@ -81,8 +81,14 @@ if [[ "$DRYRUN" -eq 1 ]]; then
 fi
 
 if want alacritty; then
-  rsync "${RSYNC_FLAGS[@]}" \
+  rsync "${RSYNC_FLAGS[@]}" --exclude 'local.toml' \
     "$HOME_CONFIG_DIR/alacritty" \
+    "$REPO_CONFIG_DIR/"
+fi
+
+if want rio; then
+  rsync "${RSYNC_FLAGS[@]}" \
+    "$HOME_CONFIG_DIR/rio" \
     "$REPO_CONFIG_DIR/"
 fi
 

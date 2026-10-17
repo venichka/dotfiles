@@ -1,0 +1,116 @@
+# Rio config, shared by macOS and Linux; ported from alacritty.toml.
+# Reference: https://rioterm.com/docs/config  (key names verified against Rio 0.5.28)
+# Platform differences live in the [platform.macos] / [platform.linux] tables at the end.
+# Rio 0.5.28 can override shell, navigation, window, renderer, env-vars and theme there,
+# but not fonts or margin, so those are shared. See PLATFORMS.md.
+
+# --- behaviour --------------------------------------------------------------
+confirm-before-quit = false                 # Alacritty never asks
+copy-on-select = false                      # alacritty: selection.save_to_clipboard = false
+draw-bold-text-with-light-colors = true     # alacritty: colors.draw_bold_text_with_bright_colors
+ignore-selection-foreground-color = true    # alacritty: selection.text = "CellForeground"
+scrollback-history-limit = 5000             # alacritty: scrolling.history
+option-as-alt = "none"                      # macOS only; "left" makes Option send Alt (nvim <A-…> maps)
+line-height = 1.0
+# alacritty: window.padding x = 6, y = 6 (Rio 0.5.28 calls it margin; order: top, right, bottom, left).
+# Rio adds its own space above the text: 2pt on Linux; on macOS 26pt for the title bar, unless
+# navigation is NativeTab. The macOS overrides at the end use NativeTab with no title bar, so one
+# margin fits both: 6pt above the text on macOS, 8pt on Linux.
+margin = [6]
+# alacritty: env.TERM. Without this Rio picks TERM=rio (Homebrew installs that terminfo),
+# which tmux.conf's "xterm-256color:RGB" doesn't match and remote hosts don't know.
+env-vars = ["TERM=xterm-256color"]
+
+[window]
+decorations = "Enabled"                     # Linux: normal title bar; macOS: see [platform.macos.window]
+opacity = 1.0
+
+[navigation]
+mode = "Plain"                              # no tab bar, like Alacritty (tmux does the multiplexing)
+
+[cursor]
+shape = "block"
+blinking = false
+
+# --- font -------------------------------------------------------------------
+[fonts]
+size = 12.5                                 # FiraCode: size 11.6 + line-height 1.05 matches Alacritty's 12pt grid
+
+# Rio 0.5.28 on macOS matches faces by style *name* and ignores `weight`, so use the exact
+# face names. ("Normal" matched nothing and picked the shortest name, e.g. Thin.)
+# Rio draws strokes thinner than Alacritty: measured, Hasklug Medium / Medium Italic look as dark
+# as FiraCode Light does there (Regular is lighter). Install Hasklug on every machine: if the family is missing, Rio shows
+# a warning and falls back to its built-in Cascadia Code without bold or italic faces.
+[fonts.regular]
+# family = "FiraCode Nerd Font"             # no italic faces
+family = "Hasklug Nerd Font"                # has ligatures (Rio 0.5.28 ignores fonts.features)
+style = "Regular"
+
+[fonts.bold]
+family = "Hasklug Nerd Font"
+style = "Bold"
+
+[fonts.italic]
+family = "Hasklug Nerd Font"
+style = "Medium Italic"
+
+[fonts.bold-italic]
+family = "Hasklug Nerd Font"
+style = "Bold Italic"
+
+# --- colors (same palette as Alacritty) --------------------------------------
+[colors]
+background = "#282c34"
+foreground = "#bbc2cf"
+cursor = "#528bff"
+vi-cursor = "#528bff"
+selection-background = "#3e4451"
+selection-foreground = "#bbc2cf"
+
+black = "#000000"
+red = "#ff5555"
+green = "#98be65"
+yellow = "#f1fa8c"
+blue = "#bd93f9"
+magenta = "#ff79c6"
+cyan = "#8be9fd"
+white = "#bfbfbf"
+
+light-black = "#4d4d4d"
+light-red = "#ff6e67"
+light-green = "#4db5bd"
+light-yellow = "#f4f99d"
+light-blue = "#caa9fa"
+light-magenta = "#ff92d0"
+light-cyan = "#9aedfe"
+light-white = "#e6e6e6"
+
+# --- key bindings (the ones customised in alacritty.toml) --------------------
+# Rio already has Cmd+C/V, Cmd+=/-/0, and vi-mode keys (hjkl, v, V, y, /, n, …).
+[bindings]
+keys = [
+  { key = "c", with = "control | shift", action = "Copy" },
+  { key = "v", with = "control | shift", action = "Paste" },
+  { key = "0", with = "control", action = "ResetFontSize" },
+  { key = "=", with = "control", action = "IncreaseFontSize" },
+  { key = "+", with = "control", action = "IncreaseFontSize" },
+  { key = "-", with = "control", action = "DecreaseFontSize" },
+  { key = "f11", action = "ToggleFullscreen" },
+  { key = "pageup", mode = "~alt", action = "ScrollPageUp" },
+  { key = "pagedown", mode = "~alt", action = "ScrollPageDown" },
+  { key = "home", with = "shift", mode = "~alt", action = "ScrollToTop" },
+  { key = "end", with = "shift", mode = "~alt", action = "ScrollToBottom" },
+  { key = "space", with = "alt", action = "ToggleVIMode" },   # Rio's default is Alt+Shift+Space
+]
+
+# --- per-platform overrides -----------------------------------------------------
+# macOS: NativeTab instead of Plain, so Rio reserves no title-bar space above the text, and no
+# window decorations, so there is no title bar either. The text area matches the old Plain +
+# Buttonless + margin -20 setup exactly, and the top lines are selectable (no drag strip).
+# The window has no title bar to drag (Amethyst tiles it), and native tabs (Cmd+T) have no
+# title bar to show their tab strip in; use tmux instead.
+[platform.macos.navigation]
+mode = "NativeTab"
+
+[platform.macos.window]
+decorations = "Disabled"

@@ -61,25 +61,9 @@ TERM = "xterm-256color"
 [font]
 size = 12.0
 
-[font.bold]
-# family = "Hasklug Nerd Font"
-family = "FiraCode Nerd Font"
-style = "Bold"
-
-[font.bold_italic]
-# family = "Hasklug Nerd Font"
-family = "FiraCode Nerd Font"
-style = "Bold Italic"
-
-[font.italic]
-# family = "Hasklug Nerd Font"
-family = "FiraCode Nerd Font"
-style = "Italic"
-
-[font.normal]
-# family = "Hasklug Nerd Font"
-family = "FiraCode Nerd Font"
-style = "Light"
+# Font faces (family and style) are machine-specific: they live in local.toml next to this
+# file (imported under [general], kept out of the repo). Without it Alacritty uses its
+# default font (Menlo on macOS, "monospace" on Linux). See PLATFORMS.md.
 
 [font.offset]
 x = 0
@@ -689,4 +673,6 @@ x = 6
 y = 6
 
 [general]
+# Machine-specific settings (font faces); a missing file is skipped.
+import = ["local.toml"]
 live_config_reload = true

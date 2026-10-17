@@ -7,6 +7,9 @@
 .config/nvim/CLAUDE.md
 **/.nvimlog
 
+# Alacritty: machine-local font faces (see PLATFORMS.md)
+.config/alacritty/local.toml
+
 # nnn: local state you probably don't want
 .config/nnn/.lastd
 .config/nnn/sessions/
