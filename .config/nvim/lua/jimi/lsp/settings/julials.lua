@@ -1,4 +1,5 @@
-local julia = vim.fn.exepath("julia") or "julia"
+local julia = vim.fn.exepath("julia")
+if julia == "" then julia = "julia" end -- exepath returns "" (not nil) when julia isn't on PATH
 local handlers = require("jimi.lsp.handlers")
 
 local function julia_root(startpath)
@@ -54,9 +55,14 @@ return {
       enableTelemetry = false,
     },
   },
-  cmd = julials_cmd(vim.uv.cwd()),
-  on_new_config = function(new_config, new_root_dir)
-    new_config.cmd = julials_cmd(new_root_dir)
+  -- A function cmd is called per client with that client's config, so each project root
+  -- gets its own server and env path (vim.lsp.config ignores lspconfig's on_new_config).
+  cmd = function(dispatchers, config)
+    return vim.lsp.rpc.start(julials_cmd(config.root_dir), dispatchers, {
+      cwd = config.cmd_cwd,
+      env = config.cmd_env,
+      detached = config.detached,
+    })
   end,
   filetypes = { "julia" },
   root_markers = { "Project.toml", "Manifest.toml", ".git" },

@@ -50,7 +50,7 @@ M.setup = function()
       focusable = true,
       style = "minimal",
       border = "rounded",
-      source = "always",
+      source = true,
       header = "",
       prefix = "",
     },
@@ -60,6 +60,21 @@ end
 
 
 
+
+-- Jump to the next/previous diagnostic and show it in a float, like the removed
+-- goto_next/goto_prev did (jump's own `float` option is deprecated in 0.12 too).
+local function diagnostic_jump(count)
+  return function()
+    vim.diagnostic.jump({
+      count = count,
+      on_jump = function(diagnostic, bufnr)
+        if diagnostic then
+          vim.diagnostic.open_float({ bufnr = bufnr, scope = "cursor", focus = false })
+        end
+      end,
+    })
+  end
+end
 
 local function lsp_keymaps(bufnr)
   local opts = { noremap = true, silent = true, buffer = bufnr }
@@ -78,8 +93,8 @@ local function lsp_keymaps(bufnr)
   nmap("<leader>li", "<cmd>LspInfo<cr>", "LSP info")
   nmap("<leader>lI", "<cmd>Mason<cr>", "Mason")
   nmap("<leader>la", vim.lsp.buf.code_action, "Code actions")
-  nmap("<leader>lj", vim.diagnostic.goto_next, "Next diagnostic")
-  nmap("<leader>lk", vim.diagnostic.goto_prev, "Previous diagnostic")
+  nmap("<leader>lj", diagnostic_jump(1), "Next diagnostic")
+  nmap("<leader>lk", diagnostic_jump(-1), "Previous diagnostic")
   nmap("<leader>lr", vim.lsp.buf.rename, "Rename symbol")
   nmap("<leader>ls", function() vim.lsp.buf.signature_help({ border = "rounded" }) end, "Signature help")
   nmap("<leader>lq", vim.diagnostic.setloclist, "Diagnostics to loclist")

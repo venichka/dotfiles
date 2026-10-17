@@ -1,4 +1,4 @@
-local colorscheme = "base16-onedark"
+local colorscheme = "base16-precious-dark-fifteen"  --"base16-onedark"
 
 local status_ok, _ = pcall(vim.cmd, "colorscheme " .. colorscheme)
 if not status_ok then
