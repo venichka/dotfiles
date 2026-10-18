@@ -21,7 +21,7 @@ machine-local file.
 | Google Drive folder (vimwiki notes, HTML export, export script) | `~/Google Drive` | `~/Google_drive` | `nvim/lua/jimi/plugins.lua` (vimwiki `init`) |
 | Sage REPL | `sage` from `PATH`, else `~/.python_envs/sage/bin/sage` | same | `nvim/lua/jimi/iron.lua` |
 | Cadabra REPL | `cadabra2-cli` from `PATH` (Homebrew) | `cadabra2-cli` from `PATH` (`/usr/bin`) | `nvim/lua/jimi/iron.lua` |
-| Julia language server | `julia` from `PATH` (juliaup) | same | `nvim/lua/jimi/lsp/settings/julials.lua` |
+| Julia language server | `julia` from `PATH` (juliaup) | `julia` from `PATH` (Arch's `julia` package) | `nvim/lua/jimi/lsp/settings/julials.lua` |
 | Alacritty window | `buttonless` decorations, opacity 1.0 | no decorations, opacity 0.8 | `alacritty/os/macos.toml`, `alacritty/os/linux.toml` |
 | Alacritty font | Iosevka Term Nerd Font Mono | same | same files (identical today, but kept per OS) |
 | Rio window and top space | `NativeTab` mode, no decorations (no title bar), opacity 1.0, 6 pt above the text | `Plain` mode, no decorations, opacity 0.8 | `rio/config.toml` (`[platform.macos]`) |
@@ -124,8 +124,16 @@ versions. To make one machine match the other, copy its `lazy-lock.json` over an
   `pandoc` or the template.
 - **Julia LanguageServer**: install it once per machine, into the shared environment:
   `julia --project=@nvim-lspconfig -e 'using Pkg; Pkg.add("LanguageServer")'`.
-  Projects don't need it. Each project only needs its own dependencies installed
-  (`Pkg.instantiate()`) so the server can index them.
+  Julia 1.13 needs LanguageServer 6 or newer. Older versions use `SymbolServer` 7, which
+  fails to precompile on 1.13 (`KeyError: key :_apply not found`), so the server exits
+  right after it starts. After every Julia minor upgrade (1.12 to 1.13 and so on), update
+  the environment:
+  `julia --project=@nvim-lspconfig -e 'using Pkg; Pkg.Registry.update(); Pkg.update()'`.
+  Don't add `SymbolServer` or `StaticLint` to the environment yourself: a direct
+  dependency keeps the old version and blocks the update. On Linux, Arch's `julia`
+  package changes minor version during an ordinary `pacman -Syu`, so check julials after
+  big updates. Projects don't need LanguageServer. Each project only needs its own
+  dependencies installed (`Pkg.instantiate()`) so the server can index them.
 - **Sage**: either `sage` on `PATH`, or a venv at `~/.python_envs/sage`.
 - **Shell config** (`.zshrc`: conda, starship init, nnn variables) isn't in this repo.
 
@@ -141,7 +149,7 @@ versions. To make one machine match the other, copy its `lazy-lock.json` over an
 | LaTeX | `mactex` (cask) | `texlive-basic`, `texlive-latex`, `texlive-binextra` (latexmk) |
 | PDF viewer | `skim` (cask) | `zathura`, `zathura-pdf-mupdf`; `xdotool` only on X11 |
 | vimwiki export | `pandoc` | `pandoc-cli` |
-| Julia | `juliaup` | `juliaup` (AUR) |
+| Julia | `juliaup` | `julia` (or `juliaup` from the AUR) |
 | Terminal | Alacritty (the Homebrew cask is disabled; install by hand), `rio` (cask) | `alacritty`, `rio` |
 | Fonts (Alacritty and Rio) | `font-iosevka-term-nerd-font`; alternative `font-monaspice-nerd-font` | `ttf-iosevkaterm-nerd`; alternative `otf-monaspace-nerd` |
 | Telescope search | `ripgrep`, `fd` | `ripgrep`, `fd` |
@@ -168,6 +176,8 @@ versions. To make one machine match the other, copy its `lazy-lock.json` over an
 - **Shebangs:** `#!/bin/zsh` works on both (Arch links `/bin` to `/usr/bin`).
 - **Julia sysimage:** `~/.julia/environments/nvim-lspconfig` has a sysimage makefile. The
   output is `languageserver.dylib` on macOS and `.so` on Linux. The config doesn't use either.
+  A sysimage only works with the Julia and package versions it was built from, so rebuild
+  it after an update if you start using it.
 - **Leftover on both machines:** `~/.config/alacritty/alacritty.yml` (the deprecated YAML
   config). `sync_to_home.sh` deletes it because it isn't in the repo; until then,
   `sync_from_home.sh` would copy it back in.
