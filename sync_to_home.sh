@@ -23,6 +23,8 @@ Safety:
       alacritty/{local.toml,os.toml}  nnn/{sessions/,bookmarks/,.lastd,mounts}
       nvim/{lazy-lock.json,CLAUDE.md}  tmux/plugins/
   - alacritty/os.toml is (re)linked to os/macos.toml or os/linux.toml for this OS.
+  - rio/config.toml is written for this OS: on macOS, its "# macos:" lines are
+    swapped in (see os_lines.awk).
 
 Options:
   --dry-run   Show what would change without copying/deleting (no backup made)
@@ -67,6 +69,31 @@ done
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_CONFIG_DIR="$REPO_DIR/.config"
 HOME_CONFIG_DIR="${HOME}/.config"
+
+case "$(uname -s)" in
+  Darwin) THIS_OS="macos" ;;
+  *)      THIS_OS="linux" ;;
+esac
+
+# render_os_file <src> <dst> <os> <label>: write <src> to <dst> with its per-OS lines
+# rendered for <os> (see os_lines.awk), unless <dst> already has exactly that content.
+render_os_file() {
+  local src="$1" dst="$2" os="$3" label="$4" tmp
+  tmp="$(mktemp)"
+  awk -v os="$os" -f "$REPO_DIR/os_lines.awk" "$src" > "$tmp"
+  if [[ -f "$dst" ]] && cmp -s "$tmp" "$dst"; then
+    rm -f "$tmp"
+    return 0
+  fi
+  if [[ "$DRYRUN" -eq 1 ]]; then
+    echo "would write $label"
+  else
+    mkdir -p "$(dirname "$dst")"
+    cat "$tmp" > "$dst"
+    echo "wrote $label"
+  fi
+  rm -f "$tmp"
+}
 
 # Guardrails: ensure expected repo paths exist (only for selected dir components)
 for name in alacritty nnn nvim rio tmux; do
@@ -116,10 +143,7 @@ if want alacritty; then
     "$HOME_CONFIG_DIR/"
 
   # alacritty.toml imports os.toml: point it at this OS's settings
-  case "$(uname -s)" in
-    Darwin) OS_TOML="os/macos.toml" ;;
-    *)      OS_TOML="os/linux.toml" ;;
-  esac
+  OS_TOML="os/$THIS_OS.toml"
   if [[ "$DRYRUN" -eq 1 ]]; then
     echo "would link alacritty/os.toml -> $OS_TOML"
   else
@@ -129,9 +153,12 @@ if want alacritty; then
 fi
 
 if want rio; then
-  rsync "${RSYNC_FLAGS[@]}" \
+  rsync "${RSYNC_FLAGS[@]}" --exclude 'config.toml' \
     "$REPO_CONFIG_DIR/rio" \
     "$HOME_CONFIG_DIR/"
+  # Rio can't set some values per OS, so config.toml tags the macOS ones: render it for this OS
+  render_os_file "$REPO_CONFIG_DIR/rio/config.toml" "$HOME_CONFIG_DIR/rio/config.toml" \
+    "$THIS_OS" "rio/config.toml (for $THIS_OS)"
 fi
 
 if want nnn; then

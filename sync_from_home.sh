@@ -14,6 +14,9 @@ Excludes applied automatically (machine-local files):
   alacritty/{local.toml,os.toml}   nnn/{sessions/,bookmarks/,.lastd,mounts}
   nvim/{lazy-lock.json,CLAUDE.md}   tmux/plugins/
 
+rio/config.toml is stored in its Linux form: on macOS, the macOS values go back
+behind their "# macos:" tags (see os_lines.awk).
+
 Syncing everything skips components that aren't installed here (e.g. rio);
 naming a missing component is an error.
 
@@ -72,6 +75,26 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_CONFIG_DIR="$REPO_DIR/.config"
 HOME_CONFIG_DIR="${HOME}/.config"
 
+# render_os_file <src> <dst> <os> <label>: write <src> to <dst> with its per-OS lines
+# rendered for <os> (see os_lines.awk), unless <dst> already has exactly that content.
+render_os_file() {
+  local src="$1" dst="$2" os="$3" label="$4" tmp
+  tmp="$(mktemp)"
+  awk -v os="$os" -f "$REPO_DIR/os_lines.awk" "$src" > "$tmp"
+  if [[ -f "$dst" ]] && cmp -s "$tmp" "$dst"; then
+    rm -f "$tmp"
+    return 0
+  fi
+  if [[ "$DRYRUN" -eq 1 ]]; then
+    echo "would write $label"
+  else
+    mkdir -p "$(dirname "$dst")"
+    cat "$tmp" > "$dst"
+    echo "wrote $label"
+  fi
+  rm -f "$tmp"
+}
+
 mkdir -p "$REPO_CONFIG_DIR"
 
 # Guardrails: ensure expected source paths exist (only for selected dir components).
@@ -103,9 +126,18 @@ if want alacritty; then
 fi
 
 if want rio; then
-  rsync "${RSYNC_FLAGS[@]}" \
+  rsync "${RSYNC_FLAGS[@]}" --exclude 'config.toml' \
     "$HOME_CONFIG_DIR/rio" \
     "$REPO_CONFIG_DIR/"
+  # The repo keeps config.toml's Linux form; on macOS this moves the macOS values back to their tags.
+  # A home copy with no tags at all predates them, and copying it would drop the repo's macOS lines.
+  if grep -q '# macos:' "$REPO_CONFIG_DIR/rio/config.toml" 2>/dev/null &&
+     ! grep -qE '# (macos:|linux:|macos only)' "$HOME_CONFIG_DIR/rio/config.toml" 2>/dev/null; then
+    echo "NOTE: ~/.config/rio/config.toml has no '# macos:' tags yet; skipping it. Run sync_to_home.sh rio first."
+  elif [[ -f "$HOME_CONFIG_DIR/rio/config.toml" ]]; then
+    render_os_file "$HOME_CONFIG_DIR/rio/config.toml" "$REPO_CONFIG_DIR/rio/config.toml" \
+      linux "rio/config.toml (Linux form)"
+  fi
 fi
 
 if want nnn; then

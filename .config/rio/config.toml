@@ -2,7 +2,9 @@
 # Reference: https://rioterm.com/docs/config  (key names verified against Rio 0.5.28)
 # Platform differences live in the [platform.macos] / [platform.linux] tables at the end.
 # Rio 0.5.28 can override shell, navigation, window, renderer, env-vars and theme there,
-# but not fonts or margin, so those are shared. See PLATFORMS.md.
+# but not fonts, line-height or margin. The few of those that differ are lines tagged
+# "# macos:". This file holds the Linux values; sync_to_home.sh swaps in the macOS ones on
+# a Mac and sync_from_home.sh swaps them back (see os_lines.awk and PLATFORMS.md).
 
 # --- behaviour --------------------------------------------------------------
 confirm-before-quit = false                 # Alacritty never asks
@@ -11,7 +13,8 @@ draw-bold-text-with-light-colors = true     # alacritty: colors.draw_bold_text_w
 ignore-selection-foreground-color = true    # alacritty: selection.text = "CellForeground"
 scrollback-history-limit = 5000             # alacritty: scrolling.history
 option-as-alt = "none"                      # macOS only; "left" makes Option send Alt (nvim <A-…> maps)
-line-height = 1.04                          # with size 12: Alacritty's row height (its font.offset.y = 1); see [fonts]
+# With the font size, matches Alacritty's row height (its font.offset.y = 1); see [fonts]
+line-height = 1.1                           # macos: line-height = 1.04
 # alacritty: window.padding x = 6, y = 6 (Rio 0.5.28 calls it margin; order: top, right, bottom, left).
 # Rio adds its own space above the text: 2pt on Linux; on macOS 26pt for the title bar, unless
 # navigation is NativeTab. The macOS overrides at the end use NativeTab with no title bar, so one
@@ -34,8 +37,12 @@ blinking = false
 
 # --- font -------------------------------------------------------------------
 [fonts]
-size = 12                                   # + line-height 1.04 = Alacritty's Iosevka 12 cells: 6x16 px at 1x, 12x31 on Retina
-                                            # (12.5 matched only at 1x; on Retina cells were 13 px wide, 8% fewer columns)
+# Same cells as Alacritty's Iosevka 12. Alacritty on Linux turns points into pixels at 96 DPI
+# (12 pt = 16 px); on macOS, and in Rio everywhere, 1 pt = 1 px (x2 on Retina). So:
+#   Linux: size 16 + line-height 1.1  -> 8x22 px cells at scale 1
+#   macOS: size 12 + line-height 1.04 -> 6x16 px at 1x, 12x31 on Retina
+#          (12.5 matched only at 1x; on Retina cells were 13 px wide, 8% fewer columns)
+size = 16                                   # macos: size = 12
 
 # Same font as Alacritty: Iosevka Term covers every sub/superscript vimtex conceals and has
 # true italics. Alternative kept installed: "MonaspiceNe Nerd Font Mono" (Monaspace Neon).
@@ -106,13 +113,15 @@ keys = [
 ]
 
 # --- per-platform overrides -----------------------------------------------------
-# macOS: NativeTab instead of Plain, so Rio reserves no title-bar space above the text, and no
-# window decorations, so there is no title bar either. The text area matches the old Plain +
-# Buttonless + margin -20 setup exactly, and the top lines are selectable (no drag strip).
-# The window has no title bar to drag (Amethyst tiles it), and native tabs (Cmd+T) have no
-# title bar to show their tab strip in; use tmux instead.
-[platform.macos.navigation]
-mode = "NativeTab"
+# On macOS, navigation is NativeTab instead of Plain, so Rio reserves no title-bar space above
+# the text, and window decorations are off, so there is no title bar either. The text area
+# matches the old Plain + Buttonless + margin -20 setup exactly, and the top lines are
+# selectable (no drag strip). The window has no title bar to drag (Amethyst tiles it), and
+# native tabs (Cmd+T) have no title bar to show their tab strip in; use tmux instead.
+# Rio on Linux rejects "NativeTab" even inside [platform.macos] and then ignores this whole
+# file, so the block below is tagged: sync_to_home.sh enables it on macOS only.
+# macos: [platform.macos.navigation]
+# macos: mode = "NativeTab"
 
 [platform.macos.window]
 decorations = "Disabled"

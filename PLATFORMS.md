@@ -24,7 +24,8 @@ machine-local file.
 | Julia language server | `julia` from `PATH` (juliaup) | `julia` from `PATH` (Arch's `julia` package) | `nvim/lua/jimi/lsp/settings/julials.lua` |
 | Alacritty window | `buttonless` decorations, opacity 1.0 | no decorations, opacity 0.8 | `alacritty/os/macos.toml`, `alacritty/os/linux.toml` |
 | Alacritty font | Iosevka Term Nerd Font Mono | same | same files (identical today, but kept per OS) |
-| Rio window and top space | `NativeTab` mode, no decorations (no title bar), opacity 1.0, 6 pt above the text | `Plain` mode, no decorations, opacity 0.8 | `rio/config.toml` (`[platform.macos]`) |
+| Rio window and top space | `NativeTab` mode, no decorations (no title bar), opacity 1.0, 6 pt above the text | `Plain` mode, no decorations, opacity 0.8 | `rio/config.toml` (`[platform.macos]`; `NativeTab` is a `# macos:` line) |
+| Rio font size and line height | 12 and 1.04 | 16 and 1.1 | `rio/config.toml` (`# macos:` lines) |
 
 In Neovim the OS check is `vim.fn.has("mac") == 1`. The Wayland check is
 `vim.env.WAYLAND_DISPLAY`.
@@ -56,7 +57,24 @@ So:
 Rio has no include or import, so each machine can't have its own extra file the way
 Alacritty does. Instead, Rio's `[platform.macos]` and `[platform.linux]` tables override
 settings per OS. In Rio 0.5.28 they cover shell, navigation, window (including
-decorations), renderer, `env-vars` and theme, but **not fonts or margin**.
+decorations), renderer, `env-vars` and theme, but **not fonts, line height or margin**.
+
+- **Per-OS lines:** what the platform tables can't do is handled by the sync scripts.
+  The repo's `rio/config.toml` holds the Linux values, and a line that differs on macOS
+  carries its Mac version after a `# macos:` tag:
+  ```toml
+  size = 16                                   # macos: size = 12
+  # macos: mode = "NativeTab"
+  ```
+  On a Mac, `sync_to_home.sh` swaps them, so `~/.config/rio/config.toml` there reads
+  `size = 12  # linux: size = 16` and `mode = "NativeTab"  # macos only`.
+  `sync_from_home.sh` swaps them back, so the repo always keeps the Linux form (the swap
+  is `os_lines.awk`). Edit either machine's file as usual. On the Mac, change a value in
+  front of its `# linux:` tag, or end a new Mac-only line with `# macos only`. Keep other
+  comments off tagged lines.
+- **`NativeTab` must stay tagged:** Rio on Linux doesn't know it and rejects it even inside
+  `[platform.macos]`. It then shows a warning and ignores the *whole* file (title bar,
+  default font, no transparency).
 
 - **Margin:** Rio adds its own space above the text: 2 pt on Linux, and on macOS 26 pt for
   the title bar unless navigation is `NativeTab`. The Mac overrides switch to `NativeTab`
@@ -69,8 +87,12 @@ decorations), renderer, `env-vars` and theme, but **not fonts or margin**.
   native tabs (Cmd+T) have nowhere to show their tab strip, so use tmux.
 - **Fonts are shared:** Iosevka Term Nerd Font must be installed on both machines. If it's
   missing, Rio shows a warning and falls back to its built-in Cascadia Code, *without*
-  bold or italic faces. Size 12 with `line-height = 1.04` gives the same cell size as
-  Alacritty's Iosevka 12 on both a 1x screen and Retina (measured on macOS).
+  bold or italic faces.
+- **Font size differs per OS:** Alacritty on Linux converts points to pixels at 96 DPI
+  (12 pt = 16 px), but on macOS, like Rio everywhere, 1 pt = 1 px (doubled on Retina). To
+  get Alacritty's Iosevka 12 cells, Rio needs size 12 with `line-height = 1.04` on macOS
+  (6×16 px at 1x, 12×31 on Retina) and size 16 with `line-height = 1.1` on Linux (8×22 px
+  at scale 1). Both were measured against Alacritty.
 - **Rio picks font faces by style name and ignores `weight`.** Always use the exact face
   name, like `style = "Medium Italic"`.
 
@@ -186,7 +208,8 @@ versions. To make one machine match the other, copy its `lazy-lock.json` over an
 
 - **Pull changes onto a machine:** `git pull`, then `./sync_to_home.sh --dry-run` to
   preview, then `./sync_to_home.sh`. It backs up the affected folders to
-  `~/.config.backup-<timestamp>/` first, and links Alacritty's `os.toml` for this OS.
+  `~/.config.backup-<timestamp>/` first, links Alacritty's `os.toml` for this OS, and
+  writes Rio's `config.toml` with this OS's values.
 - **After editing in `~/.config`:** run `./sync_from_home.sh`, review `git diff`, then
   commit and push.
 - **Components:** `alacritty`, `nnn`, `nvim`, `rio`, `tmux`, `starship`. Name one or
@@ -206,5 +229,5 @@ versions. To make one machine match the other, copy its `lazy-lock.json` over an
 - [ ] Alacritty settings that differ per OS go in `os/macos.toml` / `os/linux.toml`, never
       also in `alacritty.toml` (it would override them). One-machine experiments go in
       `local.toml`. In Rio, anything that differs goes in `[platform.macos]` /
-      `[platform.linux]` (if Rio supports it there).
+      `[platform.linux]` if Rio supports it there, otherwise on a `# macos:` line.
 - [ ] Any new package is added to the table above for both systems.
