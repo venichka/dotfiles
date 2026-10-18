@@ -23,9 +23,9 @@ machine-local file.
 | Cadabra REPL | `cadabra2-cli` from `PATH` (Homebrew) | `cadabra2-cli` from `PATH` (`/usr/bin`) | `nvim/lua/jimi/iron.lua` |
 | Julia language server | `julia` from `PATH` (juliaup) | `julia` from `PATH` (Arch's `julia` package) | `nvim/lua/jimi/lsp/settings/julials.lua` |
 | Alacritty window | `buttonless` decorations, opacity 1.0 | no decorations, opacity 0.8 | `alacritty/os/macos.toml`, `alacritty/os/linux.toml` |
-| Alacritty font | Iosevka Term Nerd Font Mono | same | same files (identical today, but kept per OS) |
+| Alacritty font | Monaspace Neon (`MonaspiceNe Nerd Font Mono`) | Iosevka Term (`IosevkaTerm Nerd Font Mono`) | same files |
 | Rio window and top space | `NativeTab` mode, no decorations (no title bar), opacity 1.0, 6 pt above the text | `Plain` mode, no decorations, opacity 0.8 | `rio/config.toml` (`[platform.macos]`; `NativeTab` is a `# macos:` line) |
-| Rio font size and line height | 12 and 1.04 | 16 and 1.1 | `rio/config.toml` (`# macos:` lines) |
+| Rio font, size and line height | Monaspace Neon, 11.5 and 1.09 | Iosevka Term, 16 and 1.1 | `rio/config.toml` (`# macos:` lines) |
 
 In Neovim the OS check is `vim.fn.has("mac") == 1`. The Wayland check is
 `vim.env.WAYLAND_DISPLAY`.
@@ -63,11 +63,11 @@ decorations), renderer, `env-vars` and theme, but **not fonts, line height or ma
   The repo's `rio/config.toml` holds the Linux values, and a line that differs on macOS
   carries its Mac version after a `# macos:` tag:
   ```toml
-  size = 16                                   # macos: size = 12
+  size = 16                                   # macos: size = 11.5
   # macos: mode = "NativeTab"
   ```
   On a Mac, `sync_to_home.sh` swaps them, so `~/.config/rio/config.toml` there reads
-  `size = 12  # linux: size = 16` and `mode = "NativeTab"  # macos only`.
+  `size = 11.5  # linux: size = 16` and `mode = "NativeTab"  # macos only`.
   `sync_from_home.sh` swaps them back, so the repo always keeps the Linux form (the swap
   is `os_lines.awk`). Edit either machine's file as usual. On the Mac, change a value in
   front of its `# linux:` tag, or end a new Mac-only line with `# macos only`. Keep other
@@ -85,14 +85,21 @@ decorations), renderer, `env-vars` and theme, but **not fonts, line height or ma
 - **What changes on the Mac:** the window has no title bar. Amethyst still tiles it, the
   first lines of text are selectable (there's no invisible drag strip any more), and
   native tabs (Cmd+T) have nowhere to show their tab strip, so use tmux.
-- **Fonts are shared:** Iosevka Term Nerd Font must be installed on both machines. If it's
-  missing, Rio shows a warning and falls back to its built-in Cascadia Code, *without*
-  bold or italic faces.
+- **Fonts:** the same as Alacritty: Monaspace Neon on macOS and Iosevka Term on Linux. If
+  the family is missing, Rio shows a warning and falls back to its built-in Cascadia Code,
+  *without* bold or italic faces. Monaspace Neon lacks some of the sub/superscripts vimtex
+  conceals to (the Greek ones like ᵦ ᵧ ᵝ ᵞ, and ˂ ˃): those fall back to another font or
+  show blank. Iosevka Term has them all.
 - **Font size differs per OS:** Alacritty on Linux converts points to pixels at 96 DPI
   (12 pt = 16 px), but on macOS, like Rio everywhere, 1 pt = 1 px (doubled on Retina). To
-  get Alacritty's Iosevka 12 cells, Rio needs size 12 with `line-height = 1.04` on macOS
-  (6×16 px at 1x, 12×31 on Retina) and size 16 with `line-height = 1.1` on Linux (8×22 px
-  at scale 1). Both were measured against Alacritty.
+  get the same cells as Alacritty at size 12, Rio needs:
+  - Linux, Iosevka Term: size 16 with `line-height = 1.1`, giving 8×22 px cells at scale 1
+    (measured against Alacritty).
+  - macOS, Monaspace Neon: size 11.5 with `line-height = 1.09`, giving 7×16 px at 1x and
+    14×31 on Retina. On the Mac, Alacritty floors the glyph width (14.88 px on Retina) but
+    Rio rounds it, so Rio at 12 would get 15 px cells and about 7% fewer columns. These
+    numbers come from Rio measured on Linux at the same pixel sizes and from Alacritty's
+    macOS source; they haven't been measured on the Mac yet.
 - **Rio picks font faces by style name and ignores `weight`.** Always use the exact face
   name, like `style = "Medium Italic"`.
 
@@ -111,8 +118,8 @@ by both `sync_to_home.sh` and `sync_from_home.sh`.
 | `tmux/plugins/` | Plugins installed by TPM | own | own |
 
 **Alacritty's `local.toml`** is loaded after `os.toml` (see [Alacritty](#alacritty)), so it
-can override anything there on one machine. To try Monaspace Neon, the installed
-alternative, on one machine:
+can override anything there on one machine. To try the other installed font on one
+machine, for example Monaspace Neon on Linux (use `IosevkaTerm Nerd Font Mono` on the Mac):
 
 ```toml
 [font.normal]
@@ -173,7 +180,7 @@ versions. To make one machine match the other, copy its `lazy-lock.json` over an
 | vimwiki export | `pandoc` | `pandoc-cli` |
 | Julia | `juliaup` | `julia` (or `juliaup` from the AUR) |
 | Terminal | Alacritty (the Homebrew cask is disabled; install by hand), `rio` (cask) | `alacritty`, `rio` |
-| Fonts (Alacritty and Rio) | `font-iosevka-term-nerd-font`; alternative `font-monaspice-nerd-font` | `ttf-iosevkaterm-nerd`; alternative `otf-monaspace-nerd` |
+| Fonts (Alacritty and Rio) | `font-monaspice-nerd-font`; alternative `font-iosevka-term-nerd-font` | `ttf-iosevkaterm-nerd`; alternative `otf-monaspace-nerd` |
 | Telescope search | `ripgrep`, `fd` | `ripgrep`, `fd` |
 | Sage REPL | venv at `~/.python_envs/sage` | `sagemath` |
 | Cadabra REPL | `cadabra2` | `cadabra2` (AUR) |

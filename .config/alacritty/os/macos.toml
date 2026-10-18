@@ -4,20 +4,21 @@
 decorations = "buttonless"
 opacity = 1.0
 
-# Iosevka Term: covers every sub/superscript vimtex conceals and has true italics.
-# Alternative kept installed: "MonaspiceNe Nerd Font Mono" (Monaspace Neon).
+# Monaspace Neon (Linux uses Iosevka Term). It has true italics but lacks some of the
+# sub/superscripts vimtex conceals to: Greek ones like ᵦ ᵧ ᵝ ᵞ, and ˂ ˃. Iosevka Term covers
+# them; it's kept installed as the alternative: "IosevkaTerm Nerd Font Mono".
 [font.normal]
-family = "IosevkaTerm Nerd Font Mono"
+family = "MonaspiceNe Nerd Font Mono"
 style = "Regular"
 
 [font.bold]
-family = "IosevkaTerm Nerd Font Mono"
+family = "MonaspiceNe Nerd Font Mono"
 style = "Bold"
 
 [font.italic]
-family = "IosevkaTerm Nerd Font Mono"
+family = "MonaspiceNe Nerd Font Mono"
 style = "Italic"
 
 [font.bold_italic]
-family = "IosevkaTerm Nerd Font Mono"
+family = "MonaspiceNe Nerd Font Mono"
 style = "Bold Italic"

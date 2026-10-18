@@ -14,7 +14,7 @@ ignore-selection-foreground-color = true    # alacritty: selection.text = "CellF
 scrollback-history-limit = 5000             # alacritty: scrolling.history
 option-as-alt = "none"                      # macOS only; "left" makes Option send Alt (nvim <A-…> maps)
 # With the font size, matches Alacritty's row height (its font.offset.y = 1); see [fonts]
-line-height = 1.1                           # macos: line-height = 1.04
+line-height = 1.1                           # macos: line-height = 1.09
 # alacritty: window.padding x = 6, y = 6 (Rio 0.5.28 calls it margin; order: top, right, bottom, left).
 # Rio adds its own space above the text: 2pt on Linux; on macOS 26pt for the title bar, unless
 # navigation is NativeTab. The macOS overrides at the end use NativeTab with no title bar, so one
@@ -37,34 +37,36 @@ blinking = false
 
 # --- font -------------------------------------------------------------------
 [fonts]
-# Same cells as Alacritty's Iosevka 12. Alacritty on Linux turns points into pixels at 96 DPI
-# (12 pt = 16 px); on macOS, and in Rio everywhere, 1 pt = 1 px (x2 on Retina). So:
-#   Linux: size 16 + line-height 1.1  -> 8x22 px cells at scale 1
-#   macOS: size 12 + line-height 1.04 -> 6x16 px at 1x, 12x31 on Retina
-#          (12.5 matched only at 1x; on Retina cells were 13 px wide, 8% fewer columns)
-size = 16                                   # macos: size = 12
+# Same cells as Alacritty's font at size 12. Alacritty on Linux turns points into pixels at
+# 96 DPI (12 pt = 16 px); on macOS, and in Rio everywhere, 1 pt = 1 px (x2 on Retina). So:
+#   Linux, Iosevka Term:   size 16 + line-height 1.1  -> 8x22 px cells at scale 1
+#   macOS, Monaspace Neon: size 11.5 + line-height 1.09 -> 7x16 px at 1x, 14x31 on Retina
+# On macOS Alacritty floors the glyph width (14.88 px on Retina) and Rio rounds it, so Rio at
+# 12 would get 15 px cells on Retina: about 7% fewer columns. 11.5 keeps both at 14.
+size = 16                                   # macos: size = 11.5
 
-# Same font as Alacritty: Iosevka Term covers every sub/superscript vimtex conceals and has
-# true italics. Alternative kept installed: "MonaspiceNe Nerd Font Mono" (Monaspace Neon).
+# Same fonts as Alacritty: Iosevka Term on Linux, Monaspace Neon on macOS. Both have true
+# italics; Iosevka Term also covers every sub/superscript vimtex conceals, while Monaspace
+# Neon lacks the Greek ones (ᵦ ᵧ ᵝ ᵞ …). Both are installed on both machines.
 # Rio 0.5.28 on macOS matches faces by style *name* and ignores `weight`, so use the exact
 # face names. ("Normal" matched nothing and picked the shortest name, e.g. Thin.)
-# Rio draws strokes thinner than Alacritty; if Regular looks light, Iosevka Term also has
-# "Medium" / "Medium Italic". Install the font on every machine: if the family is missing, Rio
-# shows a warning and falls back to its built-in Cascadia Code without bold or italic faces.
+# Rio draws strokes thinner than Alacritty; if Regular looks light, both fonts also have
+# "Medium" / "Medium Italic". If the family is missing, Rio shows a warning and falls back
+# to its built-in Cascadia Code without bold or italic faces.
 [fonts.regular]
-family = "IosevkaTerm Nerd Font Mono"
+family = "IosevkaTerm Nerd Font Mono"       # macos: family = "MonaspiceNe Nerd Font Mono"
 style = "Regular"
 
 [fonts.bold]
-family = "IosevkaTerm Nerd Font Mono"
+family = "IosevkaTerm Nerd Font Mono"       # macos: family = "MonaspiceNe Nerd Font Mono"
 style = "Bold"
 
 [fonts.italic]
-family = "IosevkaTerm Nerd Font Mono"
+family = "IosevkaTerm Nerd Font Mono"       # macos: family = "MonaspiceNe Nerd Font Mono"
 style = "Italic"
 
 [fonts.bold-italic]
-family = "IosevkaTerm Nerd Font Mono"
+family = "IosevkaTerm Nerd Font Mono"       # macos: family = "MonaspiceNe Nerd Font Mono"
 style = "Bold Italic"
 
 # --- colors (same palette as Alacritty) --------------------------------------
