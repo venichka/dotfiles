@@ -215,8 +215,8 @@ versions. To make one machine match the other, copy its `lazy-lock.json` over an
 
 - **Pull changes onto a machine:** `git pull`, then `./sync_to_home.sh --dry-run` to
   preview, then `./sync_to_home.sh`. It backs up the affected folders to
-  `~/.config.backup-<timestamp>/` first, links Alacritty's `os.toml` for this OS, and
-  writes Rio's `config.toml` with this OS's values.
+  `~/.backup/config-<timestamp>/` first (creating `~/.backup` if needed), links
+  Alacritty's `os.toml` for this OS, and writes Rio's `config.toml` with this OS's values.
 - **After editing in `~/.config`:** run `./sync_from_home.sh`, review `git diff`, then
   commit and push.
 - **Components:** `alacritty`, `nnn`, `nvim`, `rio`, `tmux`, `starship`. Name one or

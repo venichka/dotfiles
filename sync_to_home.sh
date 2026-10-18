@@ -17,7 +17,7 @@ Examples:
 
 Safety:
   - Creates a timestamped backup of existing target paths before overwriting:
-      ~/.config.backup-YYYYMMDD-HHMMSS/
+      ~/.backup/config-YYYYMMDD-HHMMSS/  (~/.backup is created if missing)
   - Only the components being synced are backed up.
   - Machine-local files are never overwritten or deleted:
       alacritty/{local.toml,os.toml}  nnn/{sessions/,bookmarks/,.lastd,mounts}
@@ -114,8 +114,8 @@ if [[ "$DRYRUN" -eq 1 ]]; then
   echo "🔎 DRY RUN: no changes will be made (and no backup will be created)."
 else
   TS="$(date +"%Y%m%d-%H%M%S")"
-  BACKUP_DIR="${HOME}/.config.backup-${TS}"
-  mkdir -p "$BACKUP_DIR"
+  BACKUP_DIR="${HOME}/.backup/config-${TS}"
+  mkdir -p "$BACKUP_DIR"   # also creates ~/.backup
 
   echo "📦 Creating backup at: $BACKUP_DIR"
 
