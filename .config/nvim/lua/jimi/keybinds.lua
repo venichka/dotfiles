@@ -31,6 +31,9 @@ map("n", "<leader>ht", function()
   if vim.treesitter.highlighter.active[buf] then
     vim.treesitter.stop(buf)
   else
+    -- ts_ensure_and_start is defined when nvim-treesitter loads (lazily, on BufReadPost),
+    -- so load it first; this is a no-op once it's loaded
+    require("lazy").load({ plugins = { "nvim-treesitter" } })
     ts_ensure_and_start(buf)
   end
 end, "Toggle treesitter highlight")

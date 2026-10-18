@@ -22,8 +22,8 @@ margin = [6]
 env-vars = ["TERM=xterm-256color"]
 
 [window]
-decorations = "Enabled"                     # Linux: normal title bar; macOS: see [platform.macos.window]
-opacity = 1.0
+decorations = "Disabled"                    # Linux: no title bar, like Alacritty's os/linux.toml
+opacity = 0.8                               # macOS: see [platform.macos.window]
 
 [navigation]
 mode = "Plain"                              # no tab bar, like Alacritty (tmux does the multiplexing)
@@ -34,28 +34,29 @@ blinking = false
 
 # --- font -------------------------------------------------------------------
 [fonts]
-size = 12.5                                 # FiraCode: size 11.6 + line-height 1.05 matches Alacritty's 12pt grid
+size = 12.5                                 # not yet tuned for Iosevka Term (Alacritty uses 12)
 
+# Same font as Alacritty: Iosevka Term covers every sub/superscript vimtex conceals and has
+# true italics. Alternative kept installed: "MonaspiceNe Nerd Font Mono" (Monaspace Neon).
 # Rio 0.5.28 on macOS matches faces by style *name* and ignores `weight`, so use the exact
 # face names. ("Normal" matched nothing and picked the shortest name, e.g. Thin.)
-# Rio draws strokes thinner than Alacritty: measured, Hasklug Medium / Medium Italic look as dark
-# as FiraCode Light does there (Regular is lighter). Install Hasklug on every machine: if the family is missing, Rio shows
-# a warning and falls back to its built-in Cascadia Code without bold or italic faces.
+# Rio draws strokes thinner than Alacritty; if Regular looks light, Iosevka Term also has
+# "Medium" / "Medium Italic". Install the font on every machine: if the family is missing, Rio
+# shows a warning and falls back to its built-in Cascadia Code without bold or italic faces.
 [fonts.regular]
-# family = "FiraCode Nerd Font"             # no italic faces
-family = "Hasklug Nerd Font"                # has ligatures (Rio 0.5.28 ignores fonts.features)
+family = "IosevkaTerm Nerd Font Mono"
 style = "Regular"
 
 [fonts.bold]
-family = "Hasklug Nerd Font"
+family = "IosevkaTerm Nerd Font Mono"
 style = "Bold"
 
 [fonts.italic]
-family = "Hasklug Nerd Font"
-style = "Medium Italic"
+family = "IosevkaTerm Nerd Font Mono"
+style = "Italic"
 
 [fonts.bold-italic]
-family = "Hasklug Nerd Font"
+family = "IosevkaTerm Nerd Font Mono"
 style = "Bold Italic"
 
 # --- colors (same palette as Alacritty) --------------------------------------
@@ -114,3 +115,4 @@ mode = "NativeTab"
 
 [platform.macos.window]
 decorations = "Disabled"
+opacity = 1.0

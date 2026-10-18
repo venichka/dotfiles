@@ -43,7 +43,8 @@ local plugins = {
       end
       vim.g.vimtex_quickfix_mode = 0
       vim.g.vimtex_compiler_method = "latexmk"
-      vim.o.conceallevel = 1
+      -- 2 hides concealed text completely; 1 leaves a space for each hidden `$`, `_{` and `}`
+      vim.o.conceallevel = 2
       vim.g.tex_conceal = ""
     end,
   },
@@ -54,15 +55,20 @@ local plugins = {
     init = function()
       -- Google Drive folder: "~/Google Drive" on macOS, "~/Google_drive" on Linux
       local gdrive = vim.fn.has("mac") == 1 and "~/Google Drive" or "~/Google_drive"
+      local template_path = "~/.dotfiles/vimwiki_conf/templates_html"
+      -- HTML export (wiki2html_zsh.sh) runs pandoc with the GitHub template; without either,
+      -- every save would fail, so only export where both exist
+      local can_export = vim.fn.executable("pandoc") == 1
+        and vim.fn.filereadable(vim.fn.expand(template_path .. "/GitHub.html5")) == 1
       vim.g.vimwiki_global_ext = 0
       vim.g.vimwiki_list = {
         {
-          auto_export = 1,
+          auto_export = can_export and 1 or 0,
           auto_header = 1,
           automatic_nested_syntaxes = 1,
           path = gdrive .. "/Work/Notes/vimwiki",
           path_html = gdrive .. "/Work/Notes/vimwiki_html",
-          template_path = "~/.dotfiles/vimwiki_conf/templates_html",
+          template_path = template_path,
           template_default = "GitHub",
           template_ext = ".html5",
           syntax = "markdown",
@@ -258,6 +264,10 @@ local plugins = {
       _G.ts_ensure_and_start = function(buf)
         buf = buf or vim.api.nvim_get_current_buf()
         local ft = vim.bo[buf].filetype
+        if ft == "" then
+          vim.notify("No filetype, so no treesitter parser to start", vim.log.levels.WARN)
+          return
+        end
         local lang = vim.treesitter.language.get_lang(ft) or ft
         local ok = pcall(vim.treesitter.language.inspect, lang)
         if ok then

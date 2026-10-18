@@ -1,0 +1,23 @@
+# macOS settings, imported by alacritty.toml through the os.toml symlink (see PLATFORMS.md).
+
+[window]
+decorations = "buttonless"
+opacity = 1.0
+
+# Iosevka Term: covers every sub/superscript vimtex conceals and has true italics.
+# Alternative kept installed: "MonaspiceNe Nerd Font Mono" (Monaspace Neon).
+[font.normal]
+family = "IosevkaTerm Nerd Font Mono"
+style = "Regular"
+
+[font.bold]
+family = "IosevkaTerm Nerd Font Mono"
+style = "Bold"
+
+[font.italic]
+family = "IosevkaTerm Nerd Font Mono"
+style = "Italic"
+
+[font.bold_italic]
+family = "IosevkaTerm Nerd Font Mono"
+style = "Bold Italic"

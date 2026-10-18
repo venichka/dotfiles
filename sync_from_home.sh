@@ -11,7 +11,11 @@ Components (default: all):
   alacritty  nnn  nvim  rio  tmux  starship
 
 Excludes applied automatically (machine-local files):
-  alacritty/local.toml   nnn/sessions/   nvim/lazy-lock.json   tmux/plugins/
+  alacritty/{local.toml,os.toml}   nnn/{sessions/,bookmarks/,.lastd,mounts}
+  nvim/{lazy-lock.json,CLAUDE.md}   tmux/plugins/
+
+Syncing everything skips components that aren't installed here (e.g. rio);
+naming a missing component is an error.
 
 Examples:
   sync_from_home.sh                 # sync everything
@@ -26,6 +30,7 @@ EOF
 
 DRYRUN=0
 SELECTED=()
+SKIPPED=()
 VALID=(alacritty nnn nvim rio tmux starship)
 
 is_valid() {
@@ -34,10 +39,15 @@ is_valid() {
   return 1
 }
 
-# want <name>: true if <name> was selected, or if nothing was selected (= all)
+# want <name>: true if <name> was selected, or if nothing was selected (= all),
+# unless <name> was skipped because it isn't installed here.
+# (Arrays are length-checked before expansion: macOS bash 3.2 treats an empty "${a[@]}" as unbound.)
 want() {
-  [[ ${#SELECTED[@]} -eq 0 ]] && return 0
   local n
+  if [[ ${#SKIPPED[@]} -gt 0 ]]; then
+    for n in "${SKIPPED[@]}"; do [[ "$n" == "$1" ]] && return 1; done
+  fi
+  [[ ${#SELECTED[@]} -eq 0 ]] && return 0
   for n in "${SELECTED[@]}"; do [[ "$n" == "$1" ]] && return 0; done
   return 1
 }
@@ -64,13 +74,19 @@ HOME_CONFIG_DIR="${HOME}/.config"
 
 mkdir -p "$REPO_CONFIG_DIR"
 
-# Guardrails: ensure expected source paths exist (only for selected dir components)
+# Guardrails: ensure expected source paths exist (only for selected dir components).
+# When syncing everything, skip components this machine doesn't have instead of failing.
 for name in alacritty nnn nvim rio tmux; do
   want "$name" || continue
   p="$HOME_CONFIG_DIR/$name"
   if [[ ! -e "$p" ]]; then
-    echo "ERROR: missing source path: $p" >&2
-    exit 1
+    if [[ ${#SELECTED[@]} -eq 0 ]]; then
+      echo "NOTE: $p not found; skipping $name."
+      SKIPPED+=("$name")
+    else
+      echo "ERROR: missing source path: $p" >&2
+      exit 1
+    fi
   fi
 done
 
@@ -81,7 +97,7 @@ if [[ "$DRYRUN" -eq 1 ]]; then
 fi
 
 if want alacritty; then
-  rsync "${RSYNC_FLAGS[@]}" --exclude 'local.toml' \
+  rsync "${RSYNC_FLAGS[@]}" --exclude 'local.toml' --exclude 'os.toml' \
     "$HOME_CONFIG_DIR/alacritty" \
     "$REPO_CONFIG_DIR/"
 fi
@@ -93,13 +109,13 @@ if want rio; then
 fi
 
 if want nnn; then
-  rsync "${RSYNC_FLAGS[@]}" --exclude 'sessions/' \
+  rsync "${RSYNC_FLAGS[@]}" --exclude 'sessions/' --exclude 'bookmarks/' --exclude '.lastd' --exclude 'mounts' \
     "$HOME_CONFIG_DIR/nnn" \
     "$REPO_CONFIG_DIR/"
 fi
 
 if want nvim; then
-  rsync "${RSYNC_FLAGS[@]}" --exclude 'lazy-lock.json' \
+  rsync "${RSYNC_FLAGS[@]}" --exclude 'lazy-lock.json' --exclude 'CLAUDE.md' \
     "$HOME_CONFIG_DIR/nvim" \
     "$REPO_CONFIG_DIR/"
 fi

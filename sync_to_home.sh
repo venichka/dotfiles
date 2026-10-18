@@ -20,7 +20,9 @@ Safety:
       ~/.config.backup-YYYYMMDD-HHMMSS/
   - Only the components being synced are backed up.
   - Machine-local files are never overwritten or deleted:
-      alacritty/local.toml  nnn/{sessions/,.lastd,mounts}  nvim/lazy-lock.json  tmux/plugins/
+      alacritty/{local.toml,os.toml}  nnn/{sessions/,bookmarks/,.lastd,mounts}
+      nvim/{lazy-lock.json,CLAUDE.md}  tmux/plugins/
+  - alacritty/os.toml is (re)linked to os/macos.toml or os/linux.toml for this OS.
 
 Options:
   --dry-run   Show what would change without copying/deleting (no backup made)
@@ -109,9 +111,21 @@ if [[ "$DRYRUN" -eq 1 ]]; then
 fi
 
 if want alacritty; then
-  rsync "${RSYNC_FLAGS[@]}" --exclude 'local.toml' \
+  rsync "${RSYNC_FLAGS[@]}" --exclude 'local.toml' --exclude 'os.toml' \
     "$REPO_CONFIG_DIR/alacritty" \
     "$HOME_CONFIG_DIR/"
+
+  # alacritty.toml imports os.toml: point it at this OS's settings
+  case "$(uname -s)" in
+    Darwin) OS_TOML="os/macos.toml" ;;
+    *)      OS_TOML="os/linux.toml" ;;
+  esac
+  if [[ "$DRYRUN" -eq 1 ]]; then
+    echo "would link alacritty/os.toml -> $OS_TOML"
+  else
+    ln -sfn "$OS_TOML" "$HOME_CONFIG_DIR/alacritty/os.toml"
+    echo "linked alacritty/os.toml -> $OS_TOML"
+  fi
 fi
 
 if want rio; then
@@ -121,13 +135,13 @@ if want rio; then
 fi
 
 if want nnn; then
-  rsync "${RSYNC_FLAGS[@]}" --exclude 'sessions/' --exclude '.lastd' --exclude 'mounts' \
+  rsync "${RSYNC_FLAGS[@]}" --exclude 'sessions/' --exclude 'bookmarks/' --exclude '.lastd' --exclude 'mounts' \
     "$REPO_CONFIG_DIR/nnn" \
     "$HOME_CONFIG_DIR/"
 fi
 
 if want nvim; then
-  rsync "${RSYNC_FLAGS[@]}" --exclude 'lazy-lock.json' \
+  rsync "${RSYNC_FLAGS[@]}" --exclude 'lazy-lock.json' --exclude 'CLAUDE.md' \
     "$REPO_CONFIG_DIR/nvim" \
     "$HOME_CONFIG_DIR/"
 fi

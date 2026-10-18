@@ -9,8 +9,9 @@ three ways:
 2. **Machine-local files**: not in git, and never copied or deleted by the sync scripts.
 3. **Per-machine setup**: packages and files outside the repo that each machine needs.
 
-Rule of thumb: never put a machine-specific value (an absolute path, a font, a macOS-only
-tool) into a tracked file. Use `~`, a `PATH` lookup, an OS check, or a machine-local file.
+Rule of thumb: never put a machine-specific value (an absolute path, a macOS-only tool)
+into a shared tracked file. Use `~`, a `PATH` lookup, an OS check, a per-OS file, or a
+machine-local file.
 
 ## 1. Detected at runtime
 
@@ -21,11 +22,34 @@ tool) into a tracked file. Use `~`, a `PATH` lookup, an OS check, or a machine-l
 | Sage REPL | `sage` from `PATH`, else `~/.python_envs/sage/bin/sage` | same | `nvim/lua/jimi/iron.lua` |
 | Cadabra REPL | `cadabra2-cli` from `PATH` (Homebrew) | `cadabra2-cli` from `PATH` (`/usr/bin`) | `nvim/lua/jimi/iron.lua` |
 | Julia language server | `julia` from `PATH` (juliaup) | same | `nvim/lua/jimi/lsp/settings/julials.lua` |
-| Alacritty font | FiraCode Nerd Font, from `local.toml` | Alacritty's default (`monospace`), because there is no `local.toml` | `alacritty/alacritty.toml` (`[general] import`) |
-| Rio window and top space | `NativeTab` mode, no decorations (no title bar), 6 pt above the text | `Plain` mode, normal title bar, 8 pt above the text | `rio/config.toml` (`[platform.macos]`) |
+| Alacritty window | `buttonless` decorations, opacity 1.0 | no decorations, opacity 0.8 | `alacritty/os/macos.toml`, `alacritty/os/linux.toml` |
+| Alacritty font | Iosevka Term Nerd Font Mono | same | same files (identical today, but kept per OS) |
+| Rio window and top space | `NativeTab` mode, no decorations (no title bar), opacity 1.0, 6 pt above the text | `Plain` mode, no decorations, opacity 0.8 | `rio/config.toml` (`[platform.macos]`) |
 
 In Neovim the OS check is `vim.fn.has("mac") == 1`. The Wayland check is
 `vim.env.WAYLAND_DISPLAY`.
+
+### Alacritty
+
+Alacritty has no OS check, so the settings that differ live in two tracked files,
+`alacritty/os/macos.toml` and `alacritty/os/linux.toml`. `sync_to_home.sh` links
+`~/.config/alacritty/os.toml` to the one for the current OS (`uname -s`), and
+`alacritty.toml` imports it:
+
+```toml
+[general]
+import = ["os.toml", "local.toml"]
+```
+
+Alacritty loads the imports in order and `alacritty.toml` *last*, and the last value wins.
+So:
+
+- `alacritty.toml` must not set anything the OS files set (`window.decorations`,
+  `window.opacity`, the font faces), or it silently overrides them on both systems.
+- `local.toml` (optional, machine-local) loads after `os.toml`, so it can override the OS
+  settings on one machine, e.g. to try another font (see section 2).
+- On a new machine, run `sync_to_home.sh` once to create the `os.toml` link. Without it
+  Alacritty falls back to its defaults (default font, title bar, opaque window).
 
 ### Rio
 
@@ -43,9 +67,9 @@ decorations), renderer, `env-vars` and theme, but **not fonts or margin**.
 - **What changes on the Mac:** the window has no title bar. Amethyst still tiles it, the
   first lines of text are selectable (there's no invisible drag strip any more), and
   native tabs (Cmd+T) have nowhere to show their tab strip, so use tmux.
-- **Fonts are shared:** Hasklug Nerd Font must be installed on both machines. If it's
+- **Fonts are shared:** Iosevka Term Nerd Font must be installed on both machines. If it's
   missing, Rio shows a warning and falls back to its built-in Cascadia Code, *without*
-  bold or italic faces.
+  bold or italic faces. The size (12.5) hasn't been tuned for Iosevka Term yet.
 - **Rio picks font faces by style name and ignores `weight`.** Always use the exact face
   name, like `style = "Medium Italic"`.
 
@@ -56,31 +80,30 @@ by both `sync_to_home.sh` and `sync_from_home.sh`.
 
 | File | Purpose | macOS | Linux |
 |---|---|---|---|
-| `alacritty/local.toml` | Font faces (family and style) | FiraCode Nerd Font: Light / Bold / Italic / Bold Italic | none (use defaults) |
+| `alacritty/os.toml` | Symlink to this OS's settings, made by `sync_to_home.sh` | → `os/macos.toml` | → `os/linux.toml` |
+| `alacritty/local.toml` | Optional overrides for this machine only | none | none |
 | `nvim/lazy-lock.json` | Plugin versions pinned on this machine | own copy | own copy |
-| `nnn/sessions/`, `nnn/.lastd`, `nnn/mounts` | nnn state | own | own |
+| `nvim/CLAUDE.md` | Claude Code notes for the Neovim config | own, if any | own, if any |
+| `nnn/sessions/`, `nnn/bookmarks/`, `nnn/.lastd`, `nnn/mounts` | nnn state | own | own |
 | `tmux/plugins/` | Plugins installed by TPM | own | own |
 
-**How Alacritty's `local.toml` works:** `alacritty.toml` imports it, and a missing file is
-skipped silently. Alacritty loads imports *first* and `alacritty.toml` *last*, and the last
-value wins. So `local.toml` can only provide settings that `alacritty.toml` leaves unset.
-That's why the font family and style are not in `alacritty.toml` at all. To use a different
-font, or to try one on just one machine, edit that machine's `local.toml`:
+**Alacritty's `local.toml`** is loaded after `os.toml` (see [Alacritty](#alacritty)), so it
+can override anything there on one machine. To try Monaspace Neon, the installed
+alternative, on one machine:
 
 ```toml
 [font.normal]
-family = "FiraCode Nerd Font"   # or "Hasklug Nerd Font"
-style = "Light"
+family = "MonaspiceNe Nerd Font Mono"
 [font.bold]
-family = "FiraCode Nerd Font"
-style = "Bold"
+family = "MonaspiceNe Nerd Font Mono"
 [font.italic]
-family = "FiraCode Nerd Font"
-style = "Italic"
+family = "MonaspiceNe Nerd Font Mono"
 [font.bold_italic]
-family = "FiraCode Nerd Font"
-style = "Bold Italic"
+family = "MonaspiceNe Nerd Font Mono"
 ```
+
+Delete `local.toml` to go back. An older `local.toml` that sets font faces (the Mac had one
+for FiraCode before the OS files existed) overrides the OS files the same way, so delete it.
 
 The lock file is ignored by choice, so the two machines can run different plugin
 versions. To make one machine match the other, copy its `lazy-lock.json` over and run
@@ -92,11 +115,12 @@ versions. To make one machine match the other, copy its `lazy-lock.json` over an
 
 - **`~/.tmux.conf`** with the single line `source-file ~/.config/tmux/tmux.conf`.
 - **TPM**: `git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm`, then
-  `prefix + I` inside tmux.
+  `prefix + I` inside tmux (or `~/.config/tmux/plugins/tpm/bin/install_plugins` outside it).
 - **vimwiki HTML template**: `~/.dotfiles/vimwiki_conf/templates_html/GitHub.html5`. It
   isn't in this repo; copy it from the Mac.
 - **vimwiki export script**: `Work/Notes/vimwiki/wiki2html_zsh.sh` in Google Drive. It needs
-  `zsh` and `pandoc`.
+  `zsh` and `pandoc`. Auto-export on save switches itself off on a machine that is missing
+  `pandoc` or the template.
 - **Julia LanguageServer**: install it once per machine, into the shared environment:
   `julia --project=@nvim-lspconfig -e 'using Pkg; Pkg.add("LanguageServer")'`.
   Projects don't need it. Each project only needs its own dependencies installed
@@ -108,7 +132,7 @@ versions. To make one machine match the other, copy its `lazy-lock.json` over an
 
 | Needed for | macOS (Homebrew) | EndeavourOS (pacman / AUR) |
 |---|---|---|
-| Editor | `neovim` | `neovim` |
+| Editor (Neovim 0.12 or newer: the julials `cmd` function needs it) | `neovim` | `neovim` |
 | Neovim system clipboard (`clipboard=unnamedplus`) | built in | `wl-clipboard` (Wayland) or `xclip` (X11) |
 | Treesitter parsers (main branch compiles them) | `tree-sitter-cli`, Xcode command-line tools | `tree-sitter-cli`, `base-devel` |
 | telescope-fzf-native (`make`) | Xcode command-line tools | `base-devel` |
@@ -118,7 +142,7 @@ versions. To make one machine match the other, copy its `lazy-lock.json` over an
 | vimwiki export | `pandoc` | `pandoc-cli` |
 | Julia | `juliaup` | `juliaup` (AUR) |
 | Terminal | Alacritty (the Homebrew cask is disabled; install by hand), `rio` (cask) | `alacritty`, `rio` |
-| Fonts | `font-fira-code-nerd-font` (Alacritty), `font-hasklug-nerd-font` (Rio) | `otf-hasklig-nerd` (Rio); Alacritty uses the default font |
+| Fonts (Alacritty and Rio) | `font-iosevka-term-nerd-font`; alternative `font-monaspice-nerd-font` | `ttf-iosevkaterm-nerd`; alternative `otf-monaspace-nerd` |
 | Telescope search | `ripgrep`, `fd` | `ripgrep`, `fd` |
 | Sage REPL | venv at `~/.python_envs/sage` | `sagemath` |
 | Cadabra REPL | `cadabra2` | `cadabra2` (AUR) |
@@ -126,8 +150,6 @@ versions. To make one machine match the other, copy its `lazy-lock.json` over an
 
 ## Differences that remain
 
-- **Alacritty title bar:** `decorations = "buttonless"` is macOS-only. On Linux Alacritty
-  shows a normal title bar.
 - **Alt key:** in Alacritty on macOS, Option doesn't act as Alt (`option_as_alt` is unset),
   so these Neovim mappings only work on Linux:
   - `<A-Up>`/`<A-Down>`/`<A-Left>`/`<A-Right>` (resize)
@@ -145,18 +167,21 @@ versions. To make one machine match the other, copy its `lazy-lock.json` over an
 - **Shebangs:** `#!/bin/zsh` works on both (Arch links `/bin` to `/usr/bin`).
 - **Julia sysimage:** `~/.julia/environments/nvim-lspconfig` has a sysimage makefile. The
   output is `languageserver.dylib` on macOS and `.so` on Linux. The config doesn't use either.
-- **Leftover on the Mac:** `~/.config/alacritty/alacritty.yml` (the deprecated YAML
-  config). `sync_from_home.sh` would copy it into the repo; delete it.
+- **Leftover on both machines:** `~/.config/alacritty/alacritty.yml` (the deprecated YAML
+  config). `sync_to_home.sh` deletes it because it isn't in the repo; until then,
+  `sync_from_home.sh` would copy it back in.
 
 ## Syncing
 
 - **Pull changes onto a machine:** `git pull`, then `./sync_to_home.sh --dry-run` to
   preview, then `./sync_to_home.sh`. It backs up the affected folders to
-  `~/.config.backup-<timestamp>/` first.
+  `~/.config.backup-<timestamp>/` first, and links Alacritty's `os.toml` for this OS.
 - **After editing in `~/.config`:** run `./sync_from_home.sh`, review `git diff`, then
   commit and push.
 - **Components:** `alacritty`, `nnn`, `nvim`, `rio`, `tmux`, `starship`. Name one or
-  more to sync only those, like `./sync_to_home.sh --dry-run rio`.
+  more to sync only those, like `./sync_to_home.sh --dry-run rio`. When syncing
+  everything, `sync_from_home.sh` skips a component that isn't installed (like `rio` on a
+  machine without it); naming a missing one is an error.
 - **New machine-local file in a synced folder:** add it to the excludes in *both* sync
   scripts and to `.gitignore`. Otherwise `sync_to_home.sh` deletes it (it syncs with
   `--delete`) and `sync_from_home.sh` copies it into the repo.
@@ -167,6 +192,8 @@ versions. To make one machine match the other, copy its `lazy-lock.json` over an
       or look the tool up on `PATH`.
 - [ ] macOS-only tools (`pbcopy`, `open`, `osascript`, Skim) and Linux-only ones
       (`xdg-open`, `wl-copy`, `xdotool`) sit behind an OS check.
-- [ ] Fonts and other per-machine looks go in Alacritty's `local.toml`. In Rio, anything
-      that differs goes in `[platform.macos]` / `[platform.linux]` (if Rio supports it there).
+- [ ] Alacritty settings that differ per OS go in `os/macos.toml` / `os/linux.toml`, never
+      also in `alacritty.toml` (it would override them). One-machine experiments go in
+      `local.toml`. In Rio, anything that differs goes in `[platform.macos]` /
+      `[platform.linux]` (if Rio supports it there).
 - [ ] Any new package is added to the table above for both systems.

@@ -7,12 +7,14 @@
 .config/nvim/CLAUDE.md
 **/.nvimlog
 
-# Alacritty: machine-local font faces (see PLATFORMS.md)
+# Alacritty: per-machine overrides and the per-OS symlink sync_to_home.sh makes (see PLATFORMS.md)
 .config/alacritty/local.toml
+.config/alacritty/os.toml
 
 # nnn: local state you probably don't want
 .config/nnn/.lastd
 .config/nnn/sessions/
+.config/nnn/bookmarks/
 .config/nnn/mounts
 
 # General “don’t commit”
