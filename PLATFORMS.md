@@ -69,7 +69,8 @@ decorations), renderer, `env-vars` and theme, but **not fonts or margin**.
   native tabs (Cmd+T) have nowhere to show their tab strip, so use tmux.
 - **Fonts are shared:** Iosevka Term Nerd Font must be installed on both machines. If it's
   missing, Rio shows a warning and falls back to its built-in Cascadia Code, *without*
-  bold or italic faces. The size (12.5) hasn't been tuned for Iosevka Term yet.
+  bold or italic faces. Size 12 with `line-height = 1.04` gives the same cell size as
+  Alacritty's Iosevka 12 on both a 1x screen and Retina (measured on macOS).
 - **Rio picks font faces by style name and ignores `weight`.** Always use the exact face
   name, like `style = "Medium Italic"`.
 
