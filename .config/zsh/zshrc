@@ -1,0 +1,53 @@
+# Shared zsh config for macOS and Linux. ~/.zshrc sources this file, then ~/.zshrc.local
+# (machine-only settings, never in git). Tools are looked up, not assumed, so a missing one
+# is skipped.
+
+export EDITOR=nvim
+export CLICOLOR=1
+
+# Homebrew (macOS)
+[[ -x /opt/homebrew/bin/brew ]] && eval "$(/opt/homebrew/bin/brew shellenv)"
+
+HISTSIZE=50000
+SAVEHIST=50000
+setopt share_history hist_ignore_dups
+
+# Tab completion, including Homebrew's (git, gh, rg, fd, ...) and zsh-completions.
+# If compinit asks about insecure directories (setup_mac.sh fixes this):
+#   chmod go-w "$(brew --prefix)/share"; chmod -R go-w "$(brew --prefix)"/share/zsh*
+if [[ -n "$HOMEBREW_PREFIX" ]]; then
+  FPATH="$HOMEBREW_PREFIX/share/zsh-completions:$HOMEBREW_PREFIX/share/zsh/site-functions:$FPATH"
+fi
+autoload -Uz compinit && compinit
+
+# conda + mamba: the first install found (Miniforge on new machines, Miniconda on older ones)
+for _conda in "$HOMEBREW_PREFIX/Caskroom/miniforge/base" "$HOMEBREW_PREFIX/Caskroom/miniconda/base" \
+              ~/miniforge3 ~/miniconda3; do
+  if [[ -x "$_conda/bin/conda" ]]; then
+    eval "$("$_conda/bin/conda" shell.zsh hook 2>/dev/null)"
+    break
+  fi
+done
+unset _conda
+
+# Jupyter Lab from ml_base (every env's kernel is registered globally, so it sees them all)
+alias jlab='conda run --no-capture-output -n ml_base jupyter lab'
+
+# nnn
+export NNN_PLUG='o:fzopen;c:fzcd;p:preview-tui;v:imgview'
+export NNN_FIFO="/tmp/nnn.fifo"
+alias nnn="nnn -e"
+
+# Prompt and fzf key bindings (Ctrl-R history, Ctrl-T files, Alt-C cd)
+command -v starship >/dev/null && eval "$(starship init zsh)"
+command -v fzf >/dev/null && source <(fzf --zsh)
+
+# Plugins: Homebrew paths on macOS, pacman paths on Arch. Syntax highlighting must load last.
+for _plugin in zsh-autosuggestions zsh-syntax-highlighting; do
+  for _dir in "$HOMEBREW_PREFIX/share/$_plugin" "/usr/share/zsh/plugins/$_plugin"; do
+    [[ -f "$_dir/$_plugin.zsh" ]] && { source "$_dir/$_plugin.zsh"; break; }
+  done
+done
+unset _plugin _dir
+
+[[ -f ~/.zshrc.local ]] && source ~/.zshrc.local

@@ -8,7 +8,7 @@ Usage: sync_to_home.sh [--dry-run] [component ...]
 Apply selected configs from this dotfiles repo into ~/.config.
 
 Components (default: all):
-  alacritty  nnn  nvim  rio  tmux  starship
+  alacritty  nnn  nvim  rio  tmux  zsh  starship
 
 Examples:
   sync_to_home.sh                 # apply everything
@@ -34,7 +34,7 @@ EOF
 
 DRYRUN=0
 SELECTED=()
-VALID=(alacritty nnn nvim rio tmux starship)
+VALID=(alacritty nnn nvim rio tmux zsh starship)
 
 is_valid() {
   local n
@@ -96,7 +96,7 @@ render_os_file() {
 }
 
 # Guardrails: ensure expected repo paths exist (only for selected dir components)
-for name in alacritty nnn nvim rio tmux; do
+for name in alacritty nnn nvim rio tmux zsh; do
   want "$name" || continue
   p="$REPO_CONFIG_DIR/$name"
   if [[ ! -e "$p" ]]; then
@@ -120,7 +120,7 @@ else
   echo "📦 Creating backup at: $BACKUP_DIR"
 
   # Backup only the selected target paths that exist
-  for name in alacritty nnn nvim rio tmux; do
+  for name in alacritty nnn nvim rio tmux zsh; do
     want "$name" || continue
     if [[ -e "$HOME_CONFIG_DIR/$name" ]]; then
       cp -a "$HOME_CONFIG_DIR/$name" "$BACKUP_DIR/"
@@ -176,6 +176,12 @@ fi
 if want tmux; then
   rsync "${RSYNC_FLAGS[@]}" --exclude 'plugins/' \
     "$REPO_CONFIG_DIR/tmux" \
+    "$HOME_CONFIG_DIR/"
+fi
+
+if want zsh; then
+  rsync "${RSYNC_FLAGS[@]}" \
+    "$REPO_CONFIG_DIR/zsh" \
     "$HOME_CONFIG_DIR/"
 fi
 

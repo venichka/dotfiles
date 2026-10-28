@@ -8,7 +8,7 @@ Usage: sync_from_home.sh [--dry-run] [component ...]
 Sync selected configs from ~/.config into this dotfiles repo.
 
 Components (default: all):
-  alacritty  nnn  nvim  rio  tmux  starship
+  alacritty  nnn  nvim  rio  tmux  zsh  starship
 
 Excludes applied automatically (machine-local files):
   alacritty/{local.toml,os.toml}   nnn/{sessions/,bookmarks/,.lastd,mounts}
@@ -34,7 +34,7 @@ EOF
 DRYRUN=0
 SELECTED=()
 SKIPPED=()
-VALID=(alacritty nnn nvim rio tmux starship)
+VALID=(alacritty nnn nvim rio tmux zsh starship)
 
 is_valid() {
   local n
@@ -99,7 +99,7 @@ mkdir -p "$REPO_CONFIG_DIR"
 
 # Guardrails: ensure expected source paths exist (only for selected dir components).
 # When syncing everything, skip components this machine doesn't have instead of failing.
-for name in alacritty nnn nvim rio tmux; do
+for name in alacritty nnn nvim rio tmux zsh; do
   want "$name" || continue
   p="$HOME_CONFIG_DIR/$name"
   if [[ ! -e "$p" ]]; then
@@ -155,6 +155,12 @@ fi
 if want tmux; then
   rsync "${RSYNC_FLAGS[@]}" --exclude 'plugins/' \
     "$HOME_CONFIG_DIR/tmux" \
+    "$REPO_CONFIG_DIR/"
+fi
+
+if want zsh; then
+  rsync "${RSYNC_FLAGS[@]}" \
+    "$HOME_CONFIG_DIR/zsh" \
     "$REPO_CONFIG_DIR/"
 fi
 
