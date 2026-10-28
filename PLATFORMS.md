@@ -187,7 +187,7 @@ versions. To make one machine match the other, copy its `lazy-lock.json` over an
 | Telescope search | `ripgrep`, `fd` | `ripgrep`, `fd` |
 | Sage REPL | venv at `~/.python_envs/sage` | `sagemath` |
 | Cadabra REPL | `cadabra2` | `cadabra2` (AUR) |
-| Shell tools | `tmux`, `starship`, `nnn`, `fzf`, `tree`, `htop`, `fastfetch` | same |
+| Shell tools | `tmux`, `starship`, `nnn`, `fzf`, `ghq`, `tree`, `htop`, `fastfetch` | same |
 | zsh plugins | `zsh-autosuggestions`, `zsh-syntax-highlighting`, `zsh-completions` | same names |
 | Python (conda + mamba, conda-forge only) | `miniforge` (cask) | Miniforge installer, to `~/miniforge3` |
 | GNU compilers | `gcc` (as `gcc-16`, `g++-16`, `gfortran`; plain `gcc` stays Apple clang) | `gcc`, `gcc-fortran` |

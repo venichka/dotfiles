@@ -111,12 +111,23 @@ EOF
 
   # Cadabra runs on Homebrew's Python. Its kernel.json names the installed version,
   # so re-run this step after `brew upgrade cadabra2`.
-  "$ENVS/ml_base/bin/jupyter" kernelspec install \
-    "$HOMEBREW_PREFIX/opt/cadabra2/share/jupyter/kernels/cadabra2" --user --name cadabra2
+  local cadabra="$HOMEBREW_PREFIX/opt/cadabra2/share/jupyter/kernels/cadabra2"
+  if [[ -x "$ENVS/ml_base/bin/jupyter" && -d "$cadabra" ]]; then
+    "$ENVS/ml_base/bin/jupyter" kernelspec install "$cadabra" --user --name cadabra2
+  else
+    note "skipped the Cadabra kernel: it needs the ml_base env and cadabra2"
+  fi
 }
 
 step_vscode() {
   local user="$HOME/Library/Application Support/Code/User" ext
+  # VS Code installed outside Homebrew (e.g. by an MDM) doesn't put `code` on PATH
+  local cli="/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
+  command -v code >/dev/null || PATH="$cli:$PATH"
+  if ! command -v code >/dev/null; then
+    note "install VS Code first, then run: $0 vscode"
+    return
+  fi
   while read -r ext; do
     code --install-extension "$ext" </dev/null
   done < "$REPO_DIR/vscode/extensions.txt"

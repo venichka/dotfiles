@@ -10,6 +10,7 @@ brew "zsh-syntax-highlighting"
 brew "zsh-completions"
 brew "starship"
 brew "fzf"
+brew "ghq"                # clones into ~/code/<host>/<owner>/<repo>; `repo` in zshrc jumps between them
 brew "tmux"
 brew "nnn"
 brew "tree"

@@ -42,6 +42,12 @@ alias nnn="nnn -e"
 command -v starship >/dev/null && eval "$(starship init zsh)"
 command -v fzf >/dev/null && source <(fzf --zsh)
 
+# Jump to a ghq-managed repo: `repo [query]`
+repo() {
+  local dir
+  dir=$(ghq list -p | fzf --query="$*" --select-1) && cd "$dir"
+}
+
 # Plugins: Homebrew paths on macOS, pacman paths on Arch. Syntax highlighting must load last.
 for _plugin in zsh-autosuggestions zsh-syntax-highlighting; do
   for _dir in "$HOMEBREW_PREFIX/share/$_plugin" "/usr/share/zsh/plugins/$_plugin"; do
