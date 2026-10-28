@@ -18,12 +18,12 @@ machine-local file.
 | What | macOS | Linux | Where |
 |---|---|---|---|
 | VimTeX PDF viewer | Skim | Zathura; `zathura_simple` on Wayland or without `xdotool` | `nvim/lua/jimi/plugins.lua` (vimtex `init`) |
-| Google Drive folder (vimwiki notes, HTML export, export script) | `~/Google Drive` | `~/Google_drive` | `nvim/lua/jimi/plugins.lua` (vimwiki `init`) |
+| Google Drive folder (vimwiki notes, HTML export, export script) | `~/Google Drive` | `~/Google_drive` | `nvim/lua/jimi/plugins.lua` (vimwiki `init`); `VIMWIKI_DIR` overrides the wiki folder, e.g. a work vault, and HTML export turns itself off where the folder has no `wiki2html_zsh.sh` |
 | Sage REPL | `sage` from `PATH`, else `~/.python_envs/sage/bin/sage` | same | `nvim/lua/jimi/iron.lua` |
 | Cadabra REPL | `cadabra2-cli` from `PATH` (Homebrew) | `cadabra2-cli` from `PATH` (`/usr/bin`) | `nvim/lua/jimi/iron.lua` |
 | Julia language server | `julia` from `PATH` (juliaup) | `julia` from `PATH` (Arch's `julia` package) | `nvim/lua/jimi/lsp/settings/julials.lua` |
 | Alacritty window | `buttonless` decorations, opacity 1.0 | no decorations, opacity 0.8 | `alacritty/os/macos.toml`, `alacritty/os/linux.toml` |
-| Alacritty font | Monaspace Neon (`MonaspiceNe Nerd Font Mono`) | Iosevka Term (`IosevkaTerm Nerd Font Mono`) | same files |
+| Alacritty font | Monaspace Neon (`MonaspiceNe Nerd Font Mono`), size 13 | Iosevka Term (`IosevkaTerm Nerd Font Mono`), size 12 | same files |
 | Rio window and top space | `NativeTab` mode, no decorations (no title bar), opacity 1.0, 6 pt above the text | `Plain` mode, no decorations, opacity 0.8 | `rio/config.toml` (`[platform.macos]`; `NativeTab` is a `# macos:` line) |
 | Rio font, size and line height | Monaspace Neon, 11.5 and 1.09 | Iosevka Term, 16 and 1.1 | `rio/config.toml` (`# macos:` lines) |
 
@@ -111,11 +111,14 @@ by both `sync_to_home.sh` and `sync_from_home.sh`.
 | File | Purpose | macOS | Linux |
 |---|---|---|---|
 | `alacritty/os.toml` | Symlink to this OS's settings, made by `sync_to_home.sh` | → `os/macos.toml` | → `os/linux.toml` |
-| `alacritty/local.toml` | Optional overrides for this machine only | none | none |
+| `alacritty/local.toml` | Optional overrides for this machine only | personal Mac: `ExtraLight` weight | none |
 | `nvim/lazy-lock.json` | Plugin versions pinned on this machine | own copy | own copy |
 | `nvim/CLAUDE.md` | Claude Code notes for the Neovim config | own, if any | own, if any |
 | `nnn/sessions/`, `nnn/bookmarks/`, `nnn/.lastd`, `nnn/mounts` | nnn state | own | own |
 | `tmux/plugins/` | Plugins installed by TPM | own | own |
+
+**`~/.zshrc.local`** (outside `~/.config`) holds shell settings for one machine only; the shared
+`zsh/zshrc` sources it last. The work Mac sets `export VIMWIKI_DIR=...` there.
 
 **Alacritty's `local.toml`** is loaded after `os.toml` (see [Alacritty](#alacritty)), so it
 can override anything there on one machine. To try the other installed font on one
@@ -143,6 +146,7 @@ versions. To make one machine match the other, copy its `lazy-lock.json` over an
 
 ### Outside the repo, needed on both machines
 
+- **`~/.zshrc`** with the single line `source ~/.config/zsh/zshrc`.
 - **`~/.tmux.conf`** with the single line `source-file ~/.config/tmux/tmux.conf`.
 - **TPM**: `git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm`, then
   `prefix + I` inside tmux (or `~/.config/tmux/plugins/tpm/bin/install_plugins` outside it).
@@ -164,7 +168,6 @@ versions. To make one machine match the other, copy its `lazy-lock.json` over an
   big updates. Projects don't need LanguageServer. Each project only needs its own
   dependencies installed (`Pkg.instantiate()`) so the server can index them.
 - **Sage**: either `sage` on `PATH`, or a venv at `~/.python_envs/sage`.
-- **Shell config** (`.zshrc`: conda, starship init, nnn variables) isn't in this repo.
 
 ### Packages
 
@@ -179,12 +182,42 @@ versions. To make one machine match the other, copy its `lazy-lock.json` over an
 | PDF viewer | `skim` (cask) | `zathura`, `zathura-pdf-mupdf`; `xdotool` only on X11 |
 | vimwiki export | `pandoc` | `pandoc-cli` |
 | Julia | `juliaup` | `julia` (or `juliaup` from the AUR) |
-| Terminal | Alacritty (the Homebrew cask is disabled; install by hand), `rio` (cask) | `alacritty`, `rio` |
+| Terminal | Alacritty (the Homebrew cask is disabled; `setup_mac.sh alacritty` builds it), `rio` (cask) | `alacritty`, `rio` |
 | Fonts (Alacritty and Rio) | `font-monaspice-nerd-font`; alternative `font-iosevka-term-nerd-font` | `ttf-iosevkaterm-nerd`; alternative `otf-monaspace-nerd` |
 | Telescope search | `ripgrep`, `fd` | `ripgrep`, `fd` |
 | Sage REPL | venv at `~/.python_envs/sage` | `sagemath` |
 | Cadabra REPL | `cadabra2` | `cadabra2` (AUR) |
-| Shell tools | `tmux`, `starship`, `nnn` | `tmux`, `starship`, `nnn` |
+| Shell tools | `tmux`, `starship`, `nnn`, `fzf`, `tree`, `htop`, `fastfetch` | same |
+| zsh plugins | `zsh-autosuggestions`, `zsh-syntax-highlighting`, `zsh-completions` | same names |
+| Python (conda + mamba, conda-forge only) | `miniforge` (cask) | Miniforge installer, to `~/miniforge3` |
+| GNU compilers | `gcc` (as `gcc-16`, `g++-16`, `gfortran`; plain `gcc` stays Apple clang) | `gcc`, `gcc-fortran` |
+
+### New Mac
+
+`./setup_mac.sh` does everything below in order; `./setup_mac.sh <step> ...` runs only those
+steps. Every step skips what's already done, so re-running after a failure is safe.
+
+| Step | What it does |
+|---|---|
+| `brew` | Command Line Tools, Homebrew, trusts the `kpeeters/repo` tap (Cadabra), installs `Brewfile` |
+| `dotfiles` | `sync_to_home.sh`, `~/.zshrc` and `~/.tmux.conf` one-liners (an existing file is left alone), TPM and its plugins |
+| `python` | `~/.condarc` from `conda/condarc`, every env in `conda/envs/` into `~/.python_envs`, FriCAS's SBCL matched and pinned |
+| `julia` | Julia `release` channel, the LanguageServer environment |
+| `kernels` | Jupyter kernels for `ml_base`, `mp`, `pmp`, `qutip`, Sage (absolute path) and Cadabra |
+| `vscode` | Extensions from `vscode/extensions.txt`; `settings.json` only if there is none yet |
+| `alacritty` | Builds Alacritty from source with a throwaway Rust toolchain (left in `~/.cargo`), plus its terminfo |
+| `mathematica` | Links Wolfram's kernel as `math` into the Sage env; run it after installing Mathematica |
+
+By hand afterwards:
+
+- **SSH:** a new key per machine (`ssh-keygen -t ed25519`), never a copied one.
+- **git:** the identity in `~/.gitconfig` (not in this repo). On the work Mac, the work email.
+- **Shell:** machine-only settings in `~/.zshrc.local`.
+- **Zotero:** copy the whole `~/Zotero` folder while Zotero is closed on both machines; Zotero
+  opens it as its data directory.
+- **Env snapshots:** `conda/envs/*.yml` list only what was asked for, not pip extras or exact
+  versions. Refresh one with `conda export -n <env> --from-history`, drop the `prefix:` line,
+  keep the `python=` pin.
 
 ## Differences that remain
 
@@ -219,7 +252,7 @@ versions. To make one machine match the other, copy its `lazy-lock.json` over an
   Alacritty's `os.toml` for this OS, and writes Rio's `config.toml` with this OS's values.
 - **After editing in `~/.config`:** run `./sync_from_home.sh`, review `git diff`, then
   commit and push.
-- **Components:** `alacritty`, `nnn`, `nvim`, `rio`, `tmux`, `starship`. Name one or
+- **Components:** `alacritty`, `nnn`, `nvim`, `rio`, `tmux`, `zsh`, `starship`. Name one or
   more to sync only those, like `./sync_to_home.sh --dry-run rio`. When syncing
   everything, `sync_from_home.sh` skips a component that isn't installed (like `rio` on a
   machine without it); naming a missing one is an error.

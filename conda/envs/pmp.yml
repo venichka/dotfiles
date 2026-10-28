@@ -1,0 +1,13 @@
+name: pmp
+channels:
+  - conda-forge
+dependencies:
+  - python=3.13
+  - pymeep[build=mpi_mpich_*]
+  - ipykernel
+  - h5py
+  - matplotlib
+  - numpy
+  - scipy
+  - pyside6
+  - scikit-learn

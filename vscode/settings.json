@@ -1,0 +1,110 @@
+{
+    "workbench.startupEditor": "none",
+    "editor.multiCursorModifier": "ctrlCmd",
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.rulers": [
+        80
+    ],
+    "editor.fontSize": 14,
+    "editor.minimap.enabled": false,
+    "vim.easymotion": true,
+    "vim.useSystemClipboard": true,
+    "vim.normalModeKeyBindingsNonRecursive": [
+        {
+            "before": [
+                "<space>"
+            ],
+            "commands": [
+                "vspacecode.space"
+            ]
+        },
+        {
+            "before": [
+                ","
+            ],
+            "commands": [
+                "vspacecode.space",
+                {
+                    "command": "whichkey.show",
+                    // "command": "whichkey.triggerKey",
+                    // "args": "m"
+                }
+            ]
+        }
+    ],
+    "vim.visualModeKeyBindingsNonRecursive": [
+        {
+            "before": [
+                "<space>"
+            ],
+            "commands": [
+                "vspacecode.space"
+            ]
+        },
+        {
+            "before": [
+                ","
+            ],
+            "commands": [
+                "vspacecode.space",
+                {
+                    "command": "whichkey.show",
+                    // "command": "whichkey.triggerKey",
+                    // "args": "m"
+                }
+            ]
+        }
+    ],
+    "vim.insertModeKeyBindings": [
+        { //exit insert mode
+          "before": [
+            "j",
+            "k"
+          ],
+          "after": [
+            "<Esc>"
+          ]
+        }],        
+    "latex-workshop.latex.autoBuild.run": "never",
+    "latex-workshop.latex.autoClean.run": "onBuilt",
+    "telemetry.telemetryLevel": "off",
+    "security.workspace.trust.untrustedFiles": "open",
+    "terminal.integrated.commandsToSkipShell": [
+        "language-julia.interrupt"
+    ],
+    "julia.symbolCacheDownload": true,
+    "jupyter.jupyterServerType": "local",
+    "jupyter.askForKernelRestart": false,
+    "jupyter.widgetScriptSources": [
+        "jsdelivr.com",
+        "unpkg.com"
+    ],
+    "mdmath.theme": "publication",
+    "editor.renderWhitespace": "all",
+    "jupyter.generateSVGPlots": true,
+    "julia.enableTelemetry": false,
+    "julia.NumThreads": 12,
+    "git.confirmSync": false,
+    "workbench.colorTheme": "doom-one",
+    "julia.enableCrashReporter": false,
+    "editor.fontLigatures": false,
+    "editor.fontFamily": "\"Hasklug Nerd Font Mono\", Menlo, Monaco, 'Courier New', monospace",
+    "terminal.external.osxExec": "iTerm.app",
+    "terminal.integrated.shell.windows": "C:\\WINDOWS\\System32\\cmd.exe",
+    "python.defaultInterpreterPath": "__HOME__/.python_envs/ml_base/bin/python",
+    "julia.additionalArgs": [],
+    "workbench.activityBar.location": "top",
+    "workbench.secondarySideBar.defaultVisibility": "visible",
+    "outline.showVariables": false,
+    "github.copilot.advanced": {},
+    "chat.disableAIFeatures": true,
+    "jupyter.interactiveWindow.creationMode": "perFile",
+    "explorer.confirmDelete": false,
+    "github.copilot.editor.enableCodeActions": false,
+    "claudeCode.preferredLocation": "panel",
+    "todo-tree.ripgrep.ripgrep": "/opt/homebrew/bin/rg",
+    "files.associations": {
+        "*.sage": "python"
+    },
+    "sagemathEnhanced.autoDeleteGeneratedFile": true,
+}

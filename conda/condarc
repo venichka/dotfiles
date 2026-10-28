@@ -1,0 +1,8 @@
+# Copied to ~/.condarc by setup_mac.sh. conda-forge only: Anaconda's "defaults" channel needs a
+# paid licence at larger organisations, and mixing it with conda-forge breaks environments.
+channels:
+  - conda-forge
+channel_priority: strict
+solver: libmamba
+envs_dirs:
+  - ~/.python_envs

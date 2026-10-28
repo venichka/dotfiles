@@ -1,0 +1,17 @@
+name: qutip
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - jupyter
+  - matplotlib
+  - numpy
+  - pandas
+  - scipy
+  - sympy
+  - h5py
+  - cython
+  - qutip
+  - ipykernel
+  - pytest
+  - ruff

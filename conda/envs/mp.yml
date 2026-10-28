@@ -1,0 +1,15 @@
+name: mp
+channels:
+  - conda-forge
+dependencies:
+  - python=3.13
+  - pymeep
+  - h5py
+  - matplotlib
+  - numpy
+  - scipy
+  - ipykernel
+  - pyside6
+  - pandas
+  - nlopt
+  - scikit-learn
