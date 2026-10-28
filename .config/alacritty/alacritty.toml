@@ -58,12 +58,9 @@ vi_mode_style = "Block"
 [env]
 TERM = "xterm-256color"
 
-[font]
-size = 12.0
-
-# Font faces (family and style) live in os/<os>.toml, imported under [general]: Alacritty's
-# own file is loaded last and wins, so anything set here can't be overridden per OS or
-# per machine. See PLATFORMS.md.
+# Font size and faces (family and style) live in os/<os>.toml, imported under [general]:
+# Alacritty's own file is loaded last and wins, so anything set here can't be overridden
+# per OS or per machine. See PLATFORMS.md.
 
 [font.offset]
 x = 0

@@ -7,9 +7,13 @@ opacity = 1.0
 # Monaspace Neon (Linux uses Iosevka Term). It has true italics but lacks some of the
 # sub/superscripts vimtex conceals to: Greek ones like ᵦ ᵧ ᵝ ᵞ, and ˂ ˃. Iosevka Term covers
 # them; it's kept installed as the alternative: "IosevkaTerm Nerd Font Mono".
+[font]
+size = 13.0
+
 [font.normal]
 family = "MonaspiceNe Nerd Font Mono"
 style = "Regular"
+# style = "ExtraLight"   # lighter weight; the personal Mac sets it in local.toml
 
 [font.bold]
 family = "MonaspiceNe Nerd Font Mono"

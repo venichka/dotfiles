@@ -6,6 +6,9 @@ opacity = 0.8
 
 # Iosevka Term: covers every sub/superscript vimtex conceals and has true italics.
 # Alternative kept installed: "MonaspiceNe Nerd Font Mono" (Monaspace Neon).
+[font]
+size = 12.0
+
 [font.normal]
 family = "IosevkaTerm Nerd Font Mono"
 style = "Regular"
