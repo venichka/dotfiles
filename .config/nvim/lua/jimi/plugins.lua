@@ -53,27 +53,30 @@ local plugins = {
     "vimwiki/vimwiki",
     cmd = { "VimwikiIndex", "VimwikiDiaryIndex", "VimwikiTabIndex" },
     init = function()
-      -- Google Drive folder: "~/Google Drive" on macOS, "~/Google_drive" on Linux
+      -- The wiki is in Google Drive ("~/Google Drive" on macOS, "~/Google_drive" on Linux);
+      -- VIMWIKI_DIR (set in ~/.zshrc.local) points it elsewhere, e.g. a work vault
       local gdrive = vim.fn.has("mac") == 1 and "~/Google Drive" or "~/Google_drive"
+      local wiki = vim.env.VIMWIKI_DIR or (gdrive .. "/Work/Notes/vimwiki")
       local template_path = "~/.dotfiles/vimwiki_conf/templates_html"
-      -- HTML export (wiki2html_zsh.sh) runs pandoc with the GitHub template; without either,
-      -- every save would fail, so only export where both exist
+      -- HTML export runs the wiki's wiki2html_zsh.sh, which needs pandoc and the GitHub
+      -- template; without all three every save would fail, so only export where they exist
       local can_export = vim.fn.executable("pandoc") == 1
         and vim.fn.filereadable(vim.fn.expand(template_path .. "/GitHub.html5")) == 1
+        and vim.fn.filereadable(vim.fn.expand(wiki .. "/wiki2html_zsh.sh")) == 1
       vim.g.vimwiki_global_ext = 0
       vim.g.vimwiki_list = {
         {
           auto_export = can_export and 1 or 0,
           auto_header = 1,
           automatic_nested_syntaxes = 1,
-          path = gdrive .. "/Work/Notes/vimwiki",
-          path_html = gdrive .. "/Work/Notes/vimwiki_html",
+          path = wiki,
+          path_html = wiki .. "_html",
           template_path = template_path,
           template_default = "GitHub",
           template_ext = ".html5",
           syntax = "markdown",
           ext = ".md",
-          custom_wiki2html = gdrive .. "/Work/Notes/vimwiki/wiki2html_zsh.sh",
+          custom_wiki2html = wiki .. "/wiki2html_zsh.sh",
           autotags = 1,
           list_margin = 0,
           links_space_char = "_",
