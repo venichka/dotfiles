@@ -50,9 +50,10 @@ iron.setup {
         block_dividers = { "# %%", "#%%" },
       },
       cadabra = {
-        -- EXPERIMENTAL: cadabra2-cli interactive REPL (Cadabra notation in a
-        -- python context). May need format/flag tuning — test send behaviour.
-        command = { "cadabra2-cli", "-q" },  -- from PATH: Homebrew on macOS, /usr/bin on Linux
+        -- cadabra2-cli interactive REPL (Cadabra notation in a python context).
+        -- -r (no readline): its line editor queries the cursor after each line and
+        -- swallows the rest of a multi-line send, so every send after the first broke.
+        command = { "cadabra2-cli", "-q", "-r" },  -- from PATH: Homebrew on macOS, /usr/bin on Linux
         block_dividers = { "# %%", "#%%" },
       },
     },

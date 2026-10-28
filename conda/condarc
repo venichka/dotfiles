@@ -6,3 +6,5 @@ channel_priority: strict
 solver: libmamba
 envs_dirs:
   - ~/.python_envs
+# New shells start with no env active; `conda activate <env>` picks one (keeps pip out of base)
+auto_activate: false
