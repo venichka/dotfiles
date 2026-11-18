@@ -38,6 +38,14 @@ map("n", "<leader>ht", function()
   end
 end, "Toggle treesitter highlight")
 
+-- Normal mode: toggle conceal (0 <-> 2) in this window. At 2, markup such as markdown's
+-- `**`, backticks and link URLs, or TeX's `\alpha` and `$`, is hidden or drawn as symbols.
+-- On a large markdown file the first switch to 2 can take seconds.
+map("n", "<leader>hc", function()
+  vim.opt_local.conceallevel = vim.wo.conceallevel == 0 and 2 or 0
+  vim.notify("conceallevel=" .. vim.wo.conceallevel)
+end, "Toggle conceal (hide markup)")
+
 -- Normal mode: search behavior tweaks
 map("n", "*", "*N", "Search word without moving to next")
 map("n", "n", "nzz", "Next search result centered")
