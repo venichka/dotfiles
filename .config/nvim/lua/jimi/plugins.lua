@@ -43,14 +43,25 @@ local plugins = {
       end
       vim.g.vimtex_quickfix_mode = 0
       vim.g.vimtex_compiler_method = "latexmk"
-      -- 2 hides concealed text completely; 1 leaves a space for each hidden `$`, `_{` and `}`
-      vim.o.conceallevel = 2
+      -- 2 hides concealed text completely; 1 leaves a space for each hidden `$`, `_{` and `}`.
+      -- TeX buffers only: init runs at every startup, so a global setting would reach
+      -- markdown too, where Neovim then takes seconds to measure large files (satellite.nvim
+      -- asks for their height). <leader>hc turns it on in any buffer.
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = { "tex", "plaintex" },
+        callback = function()
+          vim.opt_local.conceallevel = 2
+        end,
+      })
       vim.g.tex_conceal = ""
     end,
   },
 
   {
     "vimwiki/vimwiki",
+    -- NVIM_NO_VIMWIKI=1 (in ~/.zshrc.local) drops it on machines without a wiki;
+    -- `enabled`, not `cond`, so :Lazy clean also removes it from disk there
+    enabled = vim.env.NVIM_NO_VIMWIKI == nil,
     cmd = { "VimwikiIndex", "VimwikiDiaryIndex", "VimwikiTabIndex" },
     init = function()
       -- The wiki is in Google Drive ("~/Google Drive" on macOS, "~/Google_drive" on Linux);
@@ -243,6 +254,7 @@ local plugins = {
         { "<leader>md", desc = "Remove mark" },
         { "<leader>hh", desc = "Reload config" },
         { "<leader>ht", desc = "Toggle treesitter highlight" },
+        { "<leader>hc", desc = "Toggle conceal (hide markup)" },
         { "<leader>o", desc = "New line below" },
         { "<leader>O", desc = "New line above" },
         { "<leader>wh", desc = "Focus left window" },
